@@ -4008,4 +4008,3 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet)
         }
     }
 }
-
