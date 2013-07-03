@@ -29,7 +29,7 @@ or are controversial.
 
 The master branch is regularly built and tested, but is not guaranteed
 to be completely stable. Tags are regularly created to indicate new
-official, stable release versions of Litecoin.
+official, stable release versions of Goldcoin.
 
 Feature branches are created when there are major new features being
 worked on by several people.
