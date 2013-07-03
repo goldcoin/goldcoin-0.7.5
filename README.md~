@@ -1,12 +1,18 @@
-GLDCoin - a lite version of Litecoin using scrypt as a proof of work scheme.
- - 2.5 minute block targets
+GoldCoin (GLD) - an improved version of Litecoin using scrypt as a proof of work scheme.
+ - 2.5 minute block targets up till block 30500
+ - 2 minute block targets there after
+ - 504 blocks per difficulty retarget up to block 30500
+ - 60 blocks per difficulty retarget thereafter
 
-Block reawrds in order:
+Block rewards in order:
 
  - 200 Block @ 10000 GLD
  - 2000	Blocks @ 1000 GLD
  - 24000 Blocks @ 500 GLD
-
+ - 262800 Blocks @ 400 GLD
+   ...
+ - 262800 Blocks @ 8 GLD
+ - Total Blocks: 26310500
  - The default ports are 8121 (connect) and 8122 (fson rpc)
 
 
@@ -43,3 +49,7 @@ Check out http://gldcoin.com for more info about the development.
 Development Team
 ================
 - akumaburn
+
+Consultants
+================
+- dreamwatcher
