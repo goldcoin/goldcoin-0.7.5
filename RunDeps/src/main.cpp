@@ -2494,6 +2494,7 @@ bool static AlreadyHave(CTxDB& txdb, const CInv& inv)
 //Estimates the current blockHeight given system time
 //Should be useful for making those pesky block injectors defunct :) -- by akumaburn
 //The higher the hashrate, the more one can close into this value, for now our hashrate is low so a value like 3000 makes the most sense.
+//10,000 for the upper bound
 long static estimateBlockHeight() {
     time_t timer;
 	struct tm y2k;
@@ -2508,7 +2509,7 @@ long static estimateBlockHeight() {
 	///long minutesPreFork = 72825;
 	long blocks = julyFork; //(long)(72825/2.5d);//How many blocks we have before the fork estimated
     if(seconds > julyFork*60*2.5) {
-        seconds = seconds - (blocks * 60);
+        seconds = seconds - (blocks * 60 * 2.5);
         minutes = seconds / 60;
 
         blocks += (long)((double)minutes/(double)2.0);//New block time is every 2 minutes.
@@ -2622,9 +2623,9 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
             }
         }
 		
-		//If its more than 6000 blocks ahead, disconnect the peer
+		//If its more than 10000 blocks ahead of where we should be, disconnect the peer
 		//The logic behind this is that they have nothing to download and are offering a longer blockchain than should be possible at the given moment
-        if((pfrom->nStartingHeight > (estimateBlockHeight() + 3000))) {
+        if((pfrom->nStartingHeight > (estimateBlockHeight() + 10000))) {
 			printf("Partner %s using bad blockHeight %i; Estimated GOOD blockHeight should be %i; +-3000; disconnecting\n", pfrom->addr.ToString().c_str(), pfrom->nStartingHeight,(estimateBlockHeight()));
 			pfrom->fDisconnect = true;
 			return false;
