@@ -31,7 +31,7 @@ BDB_LIB_PATH=c:/deps/db/build_unix
 OPENSSL_INCLUDE_PATH=c:/deps/ssl/include
 OPENSSL_LIB_PATH=c:/deps/ssl
 MINIUPNPC_LIB_PATH=c:/deps/miniupnpc
-MINIUPNPC_INCLUDE_PATH=c:/deps
+MINIUPNPC_INCLUDE_PATH=c:/deps/
 
 OBJECTS_DIR = build
 MOC_DIR = build

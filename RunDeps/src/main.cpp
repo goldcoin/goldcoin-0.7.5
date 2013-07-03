@@ -61,10 +61,6 @@ int64 nHPSTimerStart;
 int64 nTransactionFee = 0;
 int64 nMinimumInputValue = CENT / 100;
 
-//JulyFork
-int64 julyFork = 30000;
-
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // dispatching functions
@@ -834,7 +830,7 @@ uint256 static GetOrphanRoot(const CBlock* pblock)
 }
 int64 static Calculate(long initReward, long fork, long reductionTimeYears, long rewardReduction, long nHeight) {
     long nSubsidy;
-    if (nHeight <= 26310000) {
+    if (nHeight <= 26310500) {
         nSubsidy = (long)(initReward - (((nHeight - fork) / (720 * 365 * reductionTimeYears)) * rewardReduction));
         if (nSubsidy % rewardReduction != 0) {
             nSubsidy = (long)(ceil(nSubsidy / (double) rewardReduction) * rewardReduction);
@@ -875,8 +871,6 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
 static const int64 nTargetTimespan = (2 * 60 * 60);// Difficulty changes every 60 blocks
 static const int64 nTargetSpacing = 2.0 * 60;
 
-static bool hardforkedJuly = false;
-
 //
 // minimum amount of work that could possibly be required nTime after
 // minimum work required was nBase
@@ -885,7 +879,7 @@ unsigned int ComputeMinWork(unsigned int nBase, int64 nTime)
 {
     //Todo:: Clean this mess up.. -akumaburn
     CBigNum bnResult;
-    if(!hardforkedJuly) {
+    if(!hardForkedJuly) {
 		int64 nTargetTimespan2 = (7 * 24 * 60 * 60) / 8;
 		int64 nTargetSpacing2 = 2.5 * 60;
 		// Testnet has min-difficulty blocks
@@ -1003,7 +997,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 		printf("Before: %08x  %s\n", pindexLast->nBits, CBigNum().SetCompact(pindexLast->nBits).getuint256().ToString().c_str());
 		printf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
 	} else {
-		hardforkedJuly = true;
+		hardForkedJuly = true;
 		int64 nTargetTimespanCurrent = fNewDifficultyProtocol? nTargetTimespan : (nTargetTimespan*4);
 		int64 nInterval = nTargetTimespanCurrent / nTargetSpacing;
 
@@ -1120,7 +1114,7 @@ void static InvalidChainFound(CBlockIndex* pindexNew)
       hashBestChain.ToString().substr(0,20).c_str(), nBestHeight, bnBestChainWork.ToString().c_str(),
       DateTimeStrFormat("%x %H:%M:%S", pindexBest->GetBlockTime()).c_str());
     if (pindexBest && bnBestInvalidWork > bnBestChainWork + pindexBest->GetBlockWork() * 6)
-        printf("InvalidChainFound: WARNING: Displayed transactions may not be correct!  You may need to upgrade, or other nodes may need to upgrade.\n");
+        printf("InvalidChainFound: WARNING: Displayed transactions may not be correct!  You or other nodes(most likely others if you just upgraded) need to upgrade.\n");
 
 }
 
@@ -2096,7 +2090,13 @@ bool LoadBlockIndex(bool fAllowNew)
         pchMessageStart[2] = 0xb7;
         pchMessageStart[3] = 0xdc;
         hashGenesisBlock = uint256("0xf5ae71e26c74beacc88382716aced69cddf3dffff24f384e1808905e0188f68f");
-    }
+    } /*(else if(true) {//Need to come up with logic that switches pchMessageStart
+		pchMessageStart[0] = 0xfb;
+        pchMessageStart[1] = 0xc0;
+        pchMessageStart[2] = 0xb6;
+        pchMessageStart[3] = 0xdb;
+		//unsigned char pchMessageStart[4] = { 0xfb, 0xc0, 0xb6, 0xdb }; // LiteCoin: increase each by adding 2 to bitcoin's value.
+	}*/
 
     //
     // Load block index
@@ -2284,18 +2284,26 @@ bool LoadExternalBlockFile(FILE* fileIn)
                         nPos = (unsigned int)-1;
                         break;
                     }
-                    void* nFind = memchr(pchData, pchMessageStart[0], nRead+1-sizeof(pchMessageStart));
-                    if (nFind)
-                    {
-                        if (memcmp(nFind, pchMessageStart, sizeof(pchMessageStart))==0)
-                        {
-                            nPos += ((unsigned char*)nFind - pchData) + sizeof(pchMessageStart);
-                            break;
-                        }
-                        nPos += ((unsigned char*)nFind - pchData) + 1;
-                    }
-                    else
-                        nPos += sizeof(pchData) - sizeof(pchMessageStart) + 1;
+					void* nFind;
+					if(nBestHeight < julyFork && !hardForkedJuly) {
+						//Use the old network prefix
+						pchMessageStart[0] = 0xfb;
+						pchMessageStart[1] = 0xc0;
+						pchMessageStart[2] = 0xb6;
+						pchMessageStart[3] = 0xdb;
+					}
+					nFind = memchr(pchData, pchMessageStart[0], nRead+1-sizeof(pchMessageStart));
+					if (nFind)
+					{
+						if (memcmp(nFind, pchMessageStart, sizeof(pchMessageStart))==0)
+						{
+							nPos += ((unsigned char*)nFind - pchData) + sizeof(pchMessageStart);
+							break;
+						}
+						nPos += ((unsigned char*)nFind - pchData) + 1;
+					}
+					else
+						nPos += sizeof(pchData) - sizeof(pchMessageStart) + 1;
                 } while(!fRequestShutdown);
                 if (nPos == (unsigned int)-1)
                     break;
@@ -2358,7 +2366,7 @@ string GetWarnings(string strFor)
     if (pindexBest && bnBestInvalidWork > bnBestChainWork + pindexBest->GetBlockWork() * 6)
     {
         nPriority = 2000;
-        strStatusBar = strRPC = "WARNING: Displayed transactions may not be correct!  You may need to upgrade, or other nodes may need to upgrade.";
+        strStatusBar = strRPC = "WARNING: Displayed transactions may not be correct!  You or other nodes(most likely others if you just upgraded) need to upgrade.";
     }
 
     // Alerts
@@ -2514,8 +2522,8 @@ long static estimateBlockHeight() {
 // The message start string is designed to be unlikely to occur in normal data.
 // The characters are rarely used upper ascii, not valid as UTF-8, and produce
 // a large 4-byte int at any alignment.
-unsigned char pchMessageStart[4] = { 0xfb, 0xc0, 0xb6, 0xdb }; // GLDcoin: increase each by adding 2 to bitcoin's value.
-
+//unsigned char pchMessageStart[4] = { 0xfb, 0xc0, 0xb6, 0xdb }; // LiteCoin: increase each by adding 2 to bitcoin's value.
+unsigned char pchMessageStart[4] = { 0xfd, 0xc2, 0xb4, 0xdd }; // GLDcoin: increase each by adding 2,2,-2,2 to litecoin's value.
 
 bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
 {
@@ -2614,10 +2622,10 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
             }
         }
 		
-		//If its more than 3000 blocks ahead, disconnect the peer
+		//If its more than 6000 blocks ahead, disconnect the peer
 		//The logic behind this is that they have nothing to download and are offering a longer blockchain than should be possible at the given moment
         if((pfrom->nStartingHeight > (estimateBlockHeight() + 3000))) {
-			printf("Partner %s using bad blockHeight %i; Estimated GOOD blockHeight should be %i; +-3000; disconnecting\n", pfrom->addr.ToString().c_str(), pfrom->nStartingHeight,(estimateBlockHeight() + 3000));
+			printf("Partner %s using bad blockHeight %i; Estimated GOOD blockHeight should be %i; +-3000; disconnecting\n", pfrom->addr.ToString().c_str(), pfrom->nStartingHeight,(estimateBlockHeight()));
 			pfrom->fDisconnect = true;
 			return false;
 		}
@@ -2642,7 +2650,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
 
 		//Make certain the peer has a reasonable blockHeight for the given date.
 		if((pfrom->nStartingHeight < (estimateBlockHeight() - 3000))) {
-			printf("Partner %s using lower blockHeight %i; Estimated GOOD blockHeight should be %i; +-3000; Permitting sync but omiting from blockHeight list\n", pfrom->addr.ToString().c_str(), pfrom->nStartingHeight,(estimateBlockHeight() + 3000));
+			printf("Partner %s using lower blockHeight %i; Estimated GOOD blockHeight should be %i; +-3000; Permitting sync but omiting from blockHeight list\n", pfrom->addr.ToString().c_str(), pfrom->nStartingHeight,(estimateBlockHeight()));
 		} else {
 			printf("Good Peer!: version %d, blocks=%d, us=%s, them=%s, peer=%s\n", pfrom->nVersion, pfrom->nStartingHeight, addrMe.ToString().c_str(), addrFrom.ToString().c_str(), pfrom->addr.ToString().c_str());
 			cPeerBlockCounts.input(pfrom->nStartingHeight);
@@ -3145,9 +3153,19 @@ bool ProcessMessages(CNode* pfrom)
         // Don't bother if send buffer is too full to respond anyway
         if (pfrom->vSend.size() >= SendBufferSize())
             break;
-
+		CDataStream::iterator pstart;
         // Scan for message start
-        CDataStream::iterator pstart = search(vRecv.begin(), vRecv.end(), BEGIN(pchMessageStart), END(pchMessageStart));
+		if(pfrom->nStartingHeight < julyFork) {
+			//Use the old network prefix
+			pchMessageStart[0] = 0xfb;
+			pchMessageStart[1] = 0xc0;
+			pchMessageStart[2] = 0xb6;
+			pchMessageStart[3] = 0xdb;
+		}
+		/*else {
+			//printf("Starting Height from node is: %i\n",pfrom->nStartingHeight);
+		}*/
+		pstart = search(vRecv.begin(), vRecv.end(), BEGIN(pchMessageStart), END(pchMessageStart));
         int nHeaderSize = vRecv.GetSerializeSize(CMessageHeader());
         if (vRecv.end() - pstart < nHeaderSize)
         {

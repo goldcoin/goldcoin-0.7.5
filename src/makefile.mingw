@@ -12,7 +12,7 @@ INCLUDEPATHS= \
 LIBPATHS= \
  -L"C:\deps\boost" \
  -L"C:\deps\db\build_unix" \
- -L"C:\deps\ssl\include"
+ -L"C:\deps\ssl"
 
 LIBS= \
  -l boost_system-mgw46-mt-sd-1_53 \
@@ -41,7 +41,7 @@ CFLAGS=-mthreads -O2 -w -Wall -Wextra -Wformat -Wformat-security -Wno-unused-par
 TESTDEFS = -DTEST_DATA_DIR=$(abspath test/data)
 
 ifdef USE_UPNP
- INCLUDEPATHS += -I"C:\deps"
+ INCLUDEPATHS += -I"c:\deps\miniupnpc"
  LIBPATHS += -L"C:\deps\miniupnpc"
  LIBS += -l miniupnpc -l iphlpapi
  DEFS += -DSTATICLIB -DUSE_UPNP=$(USE_UPNP)

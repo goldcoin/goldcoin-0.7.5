@@ -34,6 +34,7 @@ static const unsigned int MAX_ORPHAN_TRANSACTIONS = MAX_BLOCK_SIZE/100;
 static const int64 MIN_TX_FEE = 10000000;
 static const int64 MIN_RELAY_TX_FEE = MIN_TX_FEE;
 static const int64 MAX_MONEY = 5379019500 * COIN; // GLDcoin: maximum of 5379019500 coins
+const int64 julyFork = 30500;
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 static const int COINBASE_MATURITY = 100;
 // Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp.
@@ -43,7 +44,7 @@ static const int fHaveUPnP = true;
 #else
 static const int fHaveUPnP = false;
 #endif
-
+static bool hardForkedJuly = false;
 
 extern CScript COINBASE_FLAGS;
 
@@ -958,6 +959,13 @@ public:
 
         // Write index header
         unsigned int nSize = fileout.GetSerializeSize(*this);
+		if(nBestHeight < julyFork && !hardForkedJuly) {
+			//Use the old network prefix
+			pchMessageStart[0] = 0xfb;
+			pchMessageStart[1] = 0xc0;
+			pchMessageStart[2] = 0xb6;
+			pchMessageStart[3] = 0xdb;
+		}
         fileout << FLATDATA(pchMessageStart) << nSize;
 
         // Write block
