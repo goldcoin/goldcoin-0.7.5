@@ -34,7 +34,7 @@ static const unsigned int MAX_ORPHAN_TRANSACTIONS = MAX_BLOCK_SIZE/100;
 static const int64 MIN_TX_FEE = 10000000;
 static const int64 MIN_RELAY_TX_FEE = MIN_TX_FEE;
 static const int64 MAX_MONEY = 5379269550 * COIN; // GLDcoin: maximum of 5,379,269,550 coins in a single wallet... this value does not dictate maximum number of coins.
-const int64 julyFork = 30500;
+const int64 julyFork = 305000;//Not actual fork block number, just put in here for testing reasons.
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 static const int COINBASE_MATURITY = 100;
 // Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp.
