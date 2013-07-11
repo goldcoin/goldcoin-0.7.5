@@ -754,6 +754,8 @@ CAddrDB::CAddrDB()
 
 bool CAddrDB::Write(const CAddrMan& addr)
 {
+	unsigned char pchMessageStart[4];
+    GetMessageStart(pchMessageStart, true);
     // Generate random temporary filename
     unsigned short randv = 0;
     RAND_bytes((unsigned char *)&randv, sizeof(randv));
@@ -761,13 +763,6 @@ bool CAddrDB::Write(const CAddrMan& addr)
 
     // serialize addresses, checksum data up to that point, then append csum
     CDataStream ssPeers(SER_DISK, CLIENT_VERSION);
-	if(nBestHeight < julyFork && !hardForkedJuly) {
-		//Use the old network prefix
-		pchMessageStart[0] = 0xfb;
-		pchMessageStart[1] = 0xc0;
-		pchMessageStart[2] = 0xb6;
-		pchMessageStart[3] = 0xdb;
-	}
     ssPeers << FLATDATA(pchMessageStart);
     ssPeers << addr;
     uint256 hash = Hash(ssPeers.begin(), ssPeers.end());
@@ -840,14 +835,10 @@ bool CAddrDB::Read(CAddrMan& addr)
     }
 
     // finally, verify the network matches ours
-	if(nBestHeight < julyFork && !hardForkedJuly) {
-		//Use the old network prefix
-		pchMessageStart[0] = 0xfb;
-		pchMessageStart[1] = 0xc0;
-		pchMessageStart[2] = 0xb6;
-		pchMessageStart[3] = 0xdb;
-	}
-    if (memcmp(pchMsgTmp, pchMessageStart, sizeof(pchMsgTmp)))
+    //if (memcmp(pchMsgTmp, pchMessageStart, sizeof(pchMsgTmp)) && memcmp(pchMsgTmp, pchMessageStart2, sizeof(pchMsgTmp)))
+	unsigned char pchMessageStart[4];
+    GetMessageStart(pchMessageStart, true);
+	if (memcmp(pchMsgTmp, pchMessageStart, sizeof(pchMsgTmp)))
         return error("CAddrman::Read() : invalid network magic number");
 
     return true;
