@@ -1,7 +1,7 @@
 GoldCoin (GLD) - an improved version of Litecoin using scrypt as a proof of work scheme.
- - 2.5 minute block targets up till block 30500
+ - 2.5 minute block targets up till block 35000
  - 2 minute block targets there after
- - 504 blocks per difficulty retarget up to block 30500
+ - 504 blocks per difficulty retarget up to block 35000
  - 60 blocks per difficulty retarget thereafter
 
 Block rewards in order:
@@ -13,8 +13,15 @@ Block rewards in order:
  - 262800 Blocks @ 400 GLD
  - ... (Reduce by 8 every 2 years)
  - 262800 Blocks @ 8 GLD
- - Total Blocks: 26310500 (not final)
+ - Total Blocks: 26315000 (not final)
  - The default ports are 8121 (connect) and 8122 (fson rpc)
+
+Notice the block fork number showed in this release is not necessarily the correct one.
+
+If you wish to use this code anyways, be sure to increase the blockFork number accordingly to a very large
+value until the fork is actually announced. Otherwise you may run into problems.
+
+Don't say we didn't warn you :) (PS. Its the variable julyFork in the main.h file)
 
 
 Development process
@@ -50,8 +57,11 @@ Check out http://gldcoin.com for more info about the development.
 Development Team
 ================
 - akumaburn
+- Stouse49
 
 Consultants
 ================
-- dreamwatcher
+- Sting17
+- Microguy
+- AZIZ1977
 
