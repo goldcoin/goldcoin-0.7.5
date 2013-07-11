@@ -828,17 +828,18 @@ uint256 static GetOrphanRoot(const CBlock* pblock)
         pblock = mapOrphanBlocks[pblock->hashPrevBlock];
     return pblock->GetHash();
 }
-int64 static Calculate(long initReward, long fork, long reductionTimeYears, long rewardReduction, long nHeight) {
-    long nSubsidy;
-    if (nHeight <= 26310500) {
-        nSubsidy = (long)(initReward - (((nHeight - fork) / (720 * 365 * reductionTimeYears)) * rewardReduction));
+
+int64 static Calculate(int64 initReward, int64 fork, int64 reductionTimeYears, int64 rewardReduction, int64 nHeight) {
+    int64 nSubsidy;
+    if (nHeight <= 26315000) {
+        nSubsidy = (int64)(initReward - (((nHeight - fork) / (720 * 365 * reductionTimeYears)) * rewardReduction));
         if (nSubsidy % rewardReduction != 0) {
-            nSubsidy = (long)(ceil(nSubsidy / (double) rewardReduction) * rewardReduction);
+            nSubsidy = (int64)(ceil(nSubsidy / (double) rewardReduction) * rewardReduction);
         }
     } else {
         nSubsidy = 0;
     }
-    if (nSubsidy < 0) {
+    if (nSubsidy < 0) {//Should never happen, but just in case...
         nSubsidy = 0;
     }
     return nSubsidy;
@@ -847,7 +848,7 @@ int64 static Calculate(long initReward, long fork, long reductionTimeYears, long
 
 int64 static GetBlockValue(int nHeight, int64 nFees)
 {
-    int64 nSubsidy = 0 * COIN;
+    int64 nSubsidy = 50 * COIN;//First block is worth a ceremonial 50 coins.
 
     if(nHeight > 0 && nHeight <= 200)
     {
@@ -863,7 +864,8 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
     }
     else if(nHeight >= julyFork)
     {
-	nSubsidy = Calculate(400,julyFork,2,8,nHeight) * COIN;
+		hardForkedJuly = true;
+		nSubsidy = Calculate(400,julyFork,2,8,nHeight) * COIN;
     }
     return nSubsidy + nFees;
 }
@@ -933,6 +935,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
     int nHeight = pindexLast->nHeight + 1;
 	bool fNewDifficultyProtocol = (nHeight >= nDifficultySwitchHeight || fTestNet);
 	if(nHeight < julyFork) {
+	//if(!hardForkedJuly) {
 		int64 nTargetTimespan2 = (7 * 24 * 60 * 60) / 8;
 		int64 nTargetSpacing2 = 2.5 * 60;
 
@@ -997,7 +1000,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 		printf("Before: %08x  %s\n", pindexLast->nBits, CBigNum().SetCompact(pindexLast->nBits).getuint256().ToString().c_str());
 		printf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
 	} else {
-		hardForkedJuly = true;
+		//hardForkedJuly = true;
 		int64 nTargetTimespanCurrent = fNewDifficultyProtocol? nTargetTimespan : (nTargetTimespan*4);
 		int64 nInterval = nTargetTimespanCurrent / nTargetSpacing;
 
@@ -1800,6 +1803,10 @@ bool CBlock::AddToBlockIndex(unsigned int nFile, unsigned int nBlockPos)
     }
     pindexNew->bnChainWork = (pindexNew->pprev ? pindexNew->pprev->bnChainWork : 0) + pindexNew->GetBlockWork();
 
+
+
+
+
     CTxDB txdb;
     if (!txdb.TxnBegin())
         return false;
@@ -2022,6 +2029,18 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 bool CheckDiskSpace(uint64 nAdditionalBytes)
 {
     uint64 nFreeBytesAvailable = filesystem::space(GetDataDir()).available;
@@ -2083,14 +2102,14 @@ FILE* AppendBlockFile(unsigned int& nFileRet)
 
 bool LoadBlockIndex(bool fAllowNew)
 {
-    if (fTestNet)
+    /*if (fTestNet)
     {
         pchMessageStart[0] = 0xfc;
         pchMessageStart[1] = 0xc1;
         pchMessageStart[2] = 0xb7;
         pchMessageStart[3] = 0xdc;
         hashGenesisBlock = uint256("0xf5ae71e26c74beacc88382716aced69cddf3dffff24f384e1808905e0188f68f");
-    } /*(else if(true) {//Need to come up with logic that switches pchMessageStart
+    }(else if(true) {//Need to come up with logic that switches pchMessageStart
 		pchMessageStart[0] = 0xfb;
         pchMessageStart[1] = 0xc0;
         pchMessageStart[2] = 0xb6;
@@ -2131,11 +2150,11 @@ bool LoadBlockIndex(bool fAllowNew)
         block.nBits    = 0x1e0ffff0;
         block.nNonce   = 3591624;
 
-        if (fTestNet)
+        /*if (fTestNet)
         {
             block.nTime    = 1368409489;
             block.nNonce   = 4465406;
-        }
+        }*/
 
         //// debug print
         printf("%s\n", block.GetHash().ToString().c_str());
@@ -2267,6 +2286,9 @@ void PrintBlockTree()
 
 bool LoadExternalBlockFile(FILE* fileIn)
 {
+    unsigned char pchMessageStart[4];
+    GetMessageStart(pchMessageStart, true);
+	
     int nLoaded = 0;
     {
         LOCK(cs_main);
@@ -2285,13 +2307,6 @@ bool LoadExternalBlockFile(FILE* fileIn)
                         break;
                     }
 					void* nFind;
-					if(nBestHeight < julyFork && !hardForkedJuly) {
-						//Use the old network prefix
-						pchMessageStart[0] = 0xfb;
-						pchMessageStart[1] = 0xc0;
-						pchMessageStart[2] = 0xb6;
-						pchMessageStart[3] = 0xdb;
-					}
 					nFind = memchr(pchData, pchMessageStart[0], nRead+1-sizeof(pchMessageStart));
 					if (nFind)
 					{
@@ -2303,7 +2318,9 @@ bool LoadExternalBlockFile(FILE* fileIn)
 						nPos += ((unsigned char*)nFind - pchData) + 1;
 					}
 					else
-						nPos += sizeof(pchData) - sizeof(pchMessageStart) + 1;
+					{
+							nPos += sizeof(pchData) - sizeof(pchMessageStart) + 1;
+					}
                 } while(!fRequestShutdown);
                 if (nPos == (unsigned int)-1)
                     break;
@@ -2524,7 +2541,7 @@ long static estimateBlockHeight() {
 // The characters are rarely used upper ascii, not valid as UTF-8, and produce
 // a large 4-byte int at any alignment.
 //unsigned char pchMessageStart[4] = { 0xfb, 0xc0, 0xb6, 0xdb }; // LiteCoin: increase each by adding 2 to bitcoin's value.
-unsigned char pchMessageStart[4] = { 0xfd, 0xc2, 0xb4, 0xdd }; // GLDcoin: increase each by adding 2,2,-2,2 to litecoin's value.
+//unsigned char pchMessageStart2[4] = { 0xfd, 0xc2, 0xb4, 0xdd }; // GLDcoin: increase each by adding 2,2,-2,2 to litecoin's value.
 
 bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
 {
@@ -3117,6 +3134,9 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
     }
 
 
+
+
+
     else
     {
         // Ignore unknown commands for extensibility
@@ -3149,6 +3169,17 @@ bool ProcessMessages(CNode* pfrom)
     //  (x) data
     //
 
+    unsigned char pchMessageStart[4];
+    GetMessageStart(pchMessageStart);
+    static int64 nTimeLastPrintMessageStart = 0;
+    if (fDebug && GetBoolArg("-printmessagestart") && nTimeLastPrintMessageStart + 30 < GetAdjustedTime())
+    {
+        string strMessageStart((const char *)pchMessageStart, sizeof(pchMessageStart));
+        vector<unsigned char> vchMessageStart(strMessageStart.begin(), strMessageStart.end());
+        printf("ProcessMessages : AdjustedTime=%"PRI64d" MessageStart=%s\n", GetAdjustedTime(), HexStr(vchMessageStart).c_str());
+        nTimeLastPrintMessageStart = GetAdjustedTime();
+    }
+	
     loop
     {
         // Don't bother if send buffer is too full to respond anyway
@@ -3156,27 +3187,22 @@ bool ProcessMessages(CNode* pfrom)
             break;
 		CDataStream::iterator pstart;
         // Scan for message start
-		if(pfrom->nStartingHeight < julyFork) {
-			//Use the old network prefix
-			pchMessageStart[0] = 0xfb;
-			pchMessageStart[1] = 0xc0;
-			pchMessageStart[2] = 0xb6;
-			pchMessageStart[3] = 0xdb;
-		}
 		/*else {
 			//printf("Starting Height from node is: %i\n",pfrom->nStartingHeight);
 		}*/
+
 		pstart = search(vRecv.begin(), vRecv.end(), BEGIN(pchMessageStart), END(pchMessageStart));
         int nHeaderSize = vRecv.GetSerializeSize(CMessageHeader());
         if (vRecv.end() - pstart < nHeaderSize)
         {
             if ((int)vRecv.size() > nHeaderSize)
             {
-                printf("\n\nPROCESSMESSAGE MESSAGESTART NOT FOUND\n\n");
+				printf("\n\nPROCESSMESSAGE MESSAGESTART NOT FOUND\n\n");
                 vRecv.erase(vRecv.begin(), vRecv.end() - nHeaderSize);
             }
-            break;
+			break;
         }
+
         if (pstart - vRecv.begin() > 0)
             printf("\n\nPROCESSMESSAGE SKIPPED %d BYTES\n\n", pstart - vRecv.begin());
         vRecv.erase(vRecv.begin(), pstart);
@@ -3537,6 +3563,9 @@ public:
 uint64 nLastBlockTx = 0;
 uint64 nLastBlockSize = 0;
 
+
+
+
 CBlock* CreateNewBlock(CReserveKey& reservekey)
 {
     CBlockIndex* pindexPrev = pindexBest;
@@ -3878,6 +3907,9 @@ void static BitcoinMiner(CWallet *pwallet)
         {
             unsigned int nHashesDone = 0;
             //unsigned int nNonceFound;
+
+
+
 
             uint256 thash;
             char scratchpad[SCRYPT_SCRATCHPAD_SIZE];

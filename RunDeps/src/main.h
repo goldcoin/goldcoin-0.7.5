@@ -33,8 +33,8 @@ static const unsigned int MAX_BLOCK_SIGOPS = MAX_BLOCK_SIZE/50;
 static const unsigned int MAX_ORPHAN_TRANSACTIONS = MAX_BLOCK_SIZE/100;
 static const int64 MIN_TX_FEE = 10000000;
 static const int64 MIN_RELAY_TX_FEE = MIN_TX_FEE;
-static const int64 MAX_MONEY = 5379019500 * COIN; // GLDcoin: maximum of 5379019500 coins
-const int64 julyFork = 30500;
+static const int64 MAX_MONEY = 5381519550 * COIN; // GLDcoin: maximum of 5,381,519,550 coins in a single wallet... this value does not dictate maximum number of coins on its own.
+const int64 julyFork = 29610;//35000;
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 static const int COINBASE_MATURITY = 100;
 // Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp.
@@ -958,14 +958,10 @@ public:
             return error("CBlock::WriteToDisk() : AppendBlockFile failed");
 
         // Write index header
+        unsigned char pchMessageStart[4];
+        GetMessageStart(pchMessageStart, true);
         unsigned int nSize = fileout.GetSerializeSize(*this);
-		if(nBestHeight < julyFork && !hardForkedJuly) {
-			//Use the old network prefix
-			pchMessageStart[0] = 0xfb;
-			pchMessageStart[1] = 0xc0;
-			pchMessageStart[2] = 0xb6;
-			pchMessageStart[3] = 0xdb;
-		}
+
         fileout << FLATDATA(pchMessageStart) << nSize;
 
         // Write block
@@ -1179,6 +1175,8 @@ public:
         }
         return pindex->GetMedianTimePast();
     }
+
+
 
 
 

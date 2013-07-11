@@ -16,15 +16,16 @@
 #include "netbase.h"
 #include <string>
 #include "uint256.h"
+#define GLDCOIN_PORT  8121
+#define RPC_PORT     8122
+#define TESTNET_PORT 18121
 
 extern bool fTestNet;
+void GetMessageStart(unsigned char pchMessageStart[], bool fPersistent = false);
 static inline unsigned short GetDefaultPort(const bool testnet = fTestNet)
 {
-    return testnet ? 18121 : 8121;
+    return testnet ? TESTNET_PORT : GLDCOIN_PORT;
 }
-
-
-extern unsigned char pchMessageStart[4];
 
 /** Message header.
  * (4) message start.
@@ -52,7 +53,7 @@ class CMessageHeader
     // TODO: make private (improves encapsulation)
     public:
         enum {
-            MESSAGE_START_SIZE=sizeof(::pchMessageStart),
+            MESSAGE_START_SIZE=4,
             COMMAND_SIZE=12,
             MESSAGE_SIZE_SIZE=sizeof(int),
             CHECKSUM_SIZE=sizeof(int),
@@ -60,7 +61,7 @@ class CMessageHeader
             MESSAGE_SIZE_OFFSET=MESSAGE_START_SIZE+COMMAND_SIZE,
             CHECKSUM_OFFSET=MESSAGE_SIZE_OFFSET+MESSAGE_SIZE_SIZE
         };
-        char pchMessageStart[MESSAGE_START_SIZE];
+        unsigned char pchMessageStart[MESSAGE_START_SIZE];
         char pchCommand[COMMAND_SIZE];
         unsigned int nMessageSize;
         unsigned int nChecksum;
