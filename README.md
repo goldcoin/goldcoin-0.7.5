@@ -9,10 +9,11 @@ Block rewards in order:
  - 200 Block @ 10000 GLD
  - 2000	Blocks @ 1000 GLD
  - 24000 Blocks @ 500 GLD
+ - (The values below are post-fork in development/dispute values)
  - 262800 Blocks @ 400 GLD
-   ...
+ - ... (Reduce by 8 every 2 years)
  - 262800 Blocks @ 8 GLD
- - Total Blocks: 26310500
+ - Total Blocks: 26310500 (not final)
  - The default ports are 8121 (connect) and 8122 (fson rpc)
 
 
