@@ -831,7 +831,7 @@ uint256 static GetOrphanRoot(const CBlock* pblock)
 
 int64 static Calculate(int64 initReward, int64 fork, int64 reductionTimeYears, int64 rewardReduction, int64 nHeight) {
     int64 nSubsidy;
-    if (nHeight <= 26315000) {
+    if (nHeight <= 26325000) {
         nSubsidy = (int64)(initReward - (((nHeight - fork) / (720 * 365 * reductionTimeYears)) * rewardReduction));
         if (nSubsidy % rewardReduction != 0) {
             nSubsidy = (int64)(ceil(nSubsidy / (double) rewardReduction) * rewardReduction);
@@ -862,10 +862,11 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
     {
         nSubsidy = 500 * COIN;
     }
-    else if(nHeight >= julyFork)
+    else if(nHeight >= julyFork && nHeight <= 26325000)
     {
 		hardForkedJuly = true;
-		nSubsidy = Calculate(400,julyFork,2,8,nHeight) * COIN;
+		//nSubsidy = Calculate(400,julyFork,2,8,nHeight) * COIN;
+		nSubsidy = (long) (50/(1.1 + 0.49*(x/262800) ));
     }
     return nSubsidy + nFees;
 }
@@ -1000,7 +1001,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 		printf("Before: %08x  %s\n", pindexLast->nBits, CBigNum().SetCompact(pindexLast->nBits).getuint256().ToString().c_str());
 		printf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
 	} else {
-		//hardForkedJuly = true;
+		hardForkedJuly = true;
 		int64 nTargetTimespanCurrent = fNewDifficultyProtocol? nTargetTimespan : (nTargetTimespan*4);
 		int64 nInterval = nTargetTimespanCurrent / nTargetSpacing;
 
