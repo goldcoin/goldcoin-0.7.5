@@ -45,7 +45,7 @@ static const int fHaveUPnP = true;
 static const int fHaveUPnP = false;
 #endif
 
-static bool hardForkedJuly = false;
+extern bool hardForkedJuly;
 
 extern CScript COINBASE_FLAGS;
 
