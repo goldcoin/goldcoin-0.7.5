@@ -21,7 +21,9 @@
 #define TESTNET_PORT 18121
 
 extern bool fTestNet;
+class CNode;
 void GetMessageStart(unsigned char pchMessageStart[], bool fPersistent = false);
+void GetMessageStart2(unsigned char pchMessageStart[]);
 static inline unsigned short GetDefaultPort(const bool testnet = fTestNet)
 {
     return testnet ? TESTNET_PORT : GLDCOIN_PORT;
@@ -37,6 +39,7 @@ class CMessageHeader
 {
     public:
         CMessageHeader();
+        CMessageHeader(bool meaninglessVar);
         CMessageHeader(const char* pszCommand, unsigned int nMessageSizeIn);
 
         std::string GetCommand() const;

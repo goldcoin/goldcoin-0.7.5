@@ -38,6 +38,11 @@ void GetMessageStart(unsigned char pchMessageStart[], bool fPersistent)
         memcpy(pchMessageStart, (fPersistent || hardForkedJuly)? pchMessageStartGLDCoin : pchMessageStartLiteCoin, sizeof(pchMessageStartGLDCoin));
 }
 
+void GetMessageStart2(unsigned char pchMessageStart[])
+{
+	memcpy(pchMessageStart, (!hardForkedJuly)? pchMessageStartGLDCoin : pchMessageStartLiteCoin, sizeof(pchMessageStartGLDCoin));
+}
+
 static const char* ppszTypeName[] =
 {
     "ERROR",
@@ -47,7 +52,16 @@ static const char* ppszTypeName[] =
 
 CMessageHeader::CMessageHeader()
 {
-    GetMessageStart(pchMessageStart);
+	GetMessageStart(pchMessageStart);
+    memset(pchCommand, 0, sizeof(pchCommand));
+    pchCommand[1] = 1;
+    nMessageSize = -1;
+    nChecksum = 0;
+}
+
+CMessageHeader::CMessageHeader(bool meaninglessVar)
+{
+	//GetMessageStart2(pchMessageStart);
     memset(pchCommand, 0, sizeof(pchCommand));
     pchCommand[1] = 1;
     nMessageSize = -1;
@@ -76,7 +90,7 @@ bool CMessageHeader::IsValid() const
     unsigned char pchMessageStartProtocol[4];
     GetMessageStart(pchMessageStartProtocol);
     //if (memcmp(pchMessageStart, ::pchMessageStart, sizeof(pchMessageStart)) != 0 && memcmp(pchMessageStart2, ::pchMessageStart2, sizeof(pchMessageStart2)) != 0)
-    if (memcmp(pchMessageStart, pchMessageStartProtocol, sizeof(pchMessageStart)) != 0)
+    if (memcmp(pchMessageStart, pchMessageStartProtocol, sizeof(pchMessageStart)) != 0 && memcmp(pchMessageStart, (!hardForkedJuly)? pchMessageStartGLDCoin : pchMessageStartLiteCoin, sizeof(pchMessageStart)) != 0)
 		return false;
 
     // Check the command string for errors
