@@ -8,9 +8,9 @@ Block rewards in order:
 
  - 200 Block @ 10000 GLD
  - 2000	Blocks @ 1000 GLD
- - 37800 Blocks @ 500 GLD
+ - 37800 Blocks @ 500 GLD (not final)
  - (The values below are post-fork in development/dispute values)
- - The Block reward drops to 50 GLD
+ - The Block reward drops to 45 GLD (not final)
  - Reward for the years thereafter is divided by (1.1 + 0.49*every year after fork)
  - Total Blocks: 26,325,000 (not final)
  - Total Coins Produced: 119,124,000 (not final)
