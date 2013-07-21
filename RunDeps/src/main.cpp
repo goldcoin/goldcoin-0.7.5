@@ -61,6 +61,8 @@ int64 nHPSTimerStart;
 int64 nTransactionFee = 0;
 int64 nMinimumInputValue = CENT / 100;
 
+bool hardForkedJuly = false;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // dispatching functions
@@ -831,7 +833,7 @@ uint256 static GetOrphanRoot(const CBlock* pblock)
 
 int64 static Calculate(int64 initReward, int64 fork, int64 reductionTimeYears, int64 rewardReduction, int64 nHeight) {
     int64 nSubsidy;
-    if (nHeight <= 26315000) {
+    if (nHeight <= 26325000) {
         nSubsidy = (int64)(initReward - (((nHeight - fork) / (720 * 365 * reductionTimeYears)) * rewardReduction));
         if (nSubsidy % rewardReduction != 0) {
             nSubsidy = (int64)(ceil(nSubsidy / (double) rewardReduction) * rewardReduction);
@@ -862,10 +864,11 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
     {
         nSubsidy = 500 * COIN;
     }
-    else if(nHeight >= julyFork)
+    else if(nHeight >= julyFork && nHeight <= 26325000)
     {
 		hardForkedJuly = true;
-		nSubsidy = Calculate(400,julyFork,2,8,nHeight) * COIN;
+		//nSubsidy = Calculate(400,julyFork,2,8,nHeight) * COIN;
+        nSubsidy = (int64)(50.0/(1.1 + 0.49*((nHeight-julyFork)/262800))) * COIN;
     }
     return nSubsidy + nFees;
 }
@@ -1000,7 +1003,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 		printf("Before: %08x  %s\n", pindexLast->nBits, CBigNum().SetCompact(pindexLast->nBits).getuint256().ToString().c_str());
 		printf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
 	} else {
-		//hardForkedJuly = true;
+		hardForkedJuly = true;
 		int64 nTargetTimespanCurrent = fNewDifficultyProtocol? nTargetTimespan : (nTargetTimespan*4);
 		int64 nInterval = nTargetTimespanCurrent / nTargetSpacing;
 
@@ -3171,6 +3174,11 @@ bool ProcessMessages(CNode* pfrom)
 
     unsigned char pchMessageStart[4];
     GetMessageStart(pchMessageStart);
+	
+	//LiteCoin Compatibility
+	unsigned char pchMessageStart2[4];
+    GetMessageStart2(pchMessageStart2);
+	
     static int64 nTimeLastPrintMessageStart = 0;
     if (fDebug && GetBoolArg("-printmessagestart") && nTimeLastPrintMessageStart + 30 < GetAdjustedTime())
     {
@@ -3179,6 +3187,7 @@ bool ProcessMessages(CNode* pfrom)
         printf("ProcessMessages : AdjustedTime=%"PRI64d" MessageStart=%s\n", GetAdjustedTime(), HexStr(vchMessageStart).c_str());
         nTimeLastPrintMessageStart = GetAdjustedTime();
     }
+	int test = 0;//determines which state we are in
 	
     loop
     {
@@ -3193,22 +3202,57 @@ bool ProcessMessages(CNode* pfrom)
 
 		pstart = search(vRecv.begin(), vRecv.end(), BEGIN(pchMessageStart), END(pchMessageStart));
         int nHeaderSize = vRecv.GetSerializeSize(CMessageHeader());
+		
+		//Litecoin compatibility.. remove in a few months
+		CDataStream::iterator pstart2;
+		pstart2 = search(vRecv.begin(), vRecv.end(), BEGIN(pchMessageStart2), END(pchMessageStart2));
+		int nHeaderSize2 = vRecv.GetSerializeSize(CMessageHeader(true));
+		
+		test = 0;
         if (vRecv.end() - pstart < nHeaderSize)
         {
+			test = 1;
             if ((int)vRecv.size() > nHeaderSize)
             {
-				printf("\n\nPROCESSMESSAGE MESSAGESTART NOT FOUND\n\n");
-                vRecv.erase(vRecv.begin(), vRecv.end() - nHeaderSize);
+				test = 2;
             }
-			break;
         }
+		
+		if(test == 2) {
+			if(vRecv.end() - pstart2 < nHeaderSize2) {
+				test = 1;
+				if ((int)vRecv.size() > nHeaderSize2)
+				{
+					printf("\n\nPROCESSMESSAGE MESSAGESTART NOT FOUND\n\n");
+					if(nHeaderSize > nHeaderSize2) {
+						vRecv.erase(vRecv.begin(), vRecv.end() - nHeaderSize);
+					} else {
+						vRecv.erase(vRecv.begin(), vRecv.end() - nHeaderSize2);
+					}
+				}
+			}
+			nHeaderSize = nHeaderSize2;
+			pstart = pstart2;
+		}
+		
+		if(test == 1) {
+			break;
+		}
 
-        if (pstart - vRecv.begin() > 0)
-            printf("\n\nPROCESSMESSAGE SKIPPED %d BYTES\n\n", pstart - vRecv.begin());
-        vRecv.erase(vRecv.begin(), pstart);
+		if(test != 2) {
+			if (pstart - vRecv.begin() > 0)
+			printf("\n\nPROCESSMESSAGE SKIPPED %d BYTES\n\n", pstart - vRecv.begin());
+			vRecv.erase(vRecv.begin(), pstart);
+		} else {
+			if (pstart2 - vRecv.begin() > 0)
+			printf("\n\nPROCESSMESSAGE SKIPPED %d BYTES\n\n", pstart2 - vRecv.begin());
+			vRecv.erase(vRecv.begin(), pstart2);	
+		}
 
         // Read header
-        vector<char> vHeaderSave(vRecv.begin(), vRecv.begin() + nHeaderSize);
+		vector<char> vHeaderSave(vRecv.begin(), vRecv.begin() + nHeaderSize);
+		vector<char> vHeaderSave2(vRecv.begin(), vRecv.begin() + nHeaderSize2);
+		
         CMessageHeader hdr;
         vRecv >> hdr;
         if (!hdr.IsValid())
@@ -3228,7 +3272,11 @@ bool ProcessMessages(CNode* pfrom)
         if (nMessageSize > vRecv.size())
         {
             // Rewind and wait for rest of message
-            vRecv.insert(vRecv.begin(), vHeaderSave.begin(), vHeaderSave.end());
+			if(test == 2) {
+				vRecv.insert(vRecv.begin(), vHeaderSave2.begin(), vHeaderSave2.end());
+			} else {
+				vRecv.insert(vRecv.begin(), vHeaderSave.begin(), vHeaderSave.end());
+			}
             break;
         }
 
