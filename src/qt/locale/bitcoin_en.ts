@@ -13,7 +13,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Copyright © 2013-2014 GoldCoin (GLD) Developers
+        <source>Copyright © 2013 GoldCoin (GLD) Developers
 
 This is experimental software.
 

@@ -1,19 +1,19 @@
 GoldCoin (GLD) - an improved version of Litecoin using scrypt as a proof of work scheme.
- - 2.5 minute block targets up till block 40000
+ - 2.5 minute block targets up till block 45000
  - 2 minute block targets there after
- - 504 blocks per difficulty retarget up to block 40000
+ - 504 blocks per difficulty retarget up to block 45000
  - 60 blocks per difficulty retarget thereafter
 
 Block rewards in order:
 
  - 200 Block @ 10000 GLD
  - 2000	Blocks @ 1000 GLD
- - 37800 Blocks @ 500 GLD (not final)
+ - 42800 Blocks @ 500 GLD
  - (The values below are post-fork in development/dispute values)
- - The Block reward drops to 45 GLD (not final)
- - Reward for the years thereafter is divided by (1.1 + 0.49*every year after fork)
- - Total Blocks: 26,325,000 (not final)
- - Total Coins Produced: 119,124,000 (not final)
+ - The Block reward drops to 45 GLD
+ - Reward for the years thereafter is 50 divided by (1.1 + 0.49*every year after fork)
+ - Total Blocks: 26,325,000
+ - Total Coins Produced: 121,399,000 (including 50 coin 0th block)
  - The default ports are 8121 (connect) and 8122 (fson rpc)
 
 Notice the block fork number showed in this release is not necessarily the correct one.

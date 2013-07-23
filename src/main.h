@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
 // Copyright (c) 2011-2012 Litecoin Developers
-// Copyright (c) 2013-2014 GoldCoin (GLD) Developers
+// Copyright (c) 2013 GoldCoin (GLD) Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef BITCOIN_MAIN_H
@@ -33,8 +33,8 @@ static const unsigned int MAX_BLOCK_SIGOPS = MAX_BLOCK_SIZE/50;
 static const unsigned int MAX_ORPHAN_TRANSACTIONS = MAX_BLOCK_SIZE/100;
 static const int64 MIN_TX_FEE = 10000000;
 static const int64 MIN_RELAY_TX_FEE = MIN_TX_FEE;
-static const int64 MAX_MONEY = 119124000 * COIN; // GLDcoin: maximum of 119,124,000 coins in a single wallet... this value does not dictate maximum number of coins on its own.
-const int64 julyFork = 29610;//29610//40000, remember to change this value to something very large like 200000000 if you want this client to behave as the old client
+static const int64 MAX_MONEY = 121399000 * COIN; // GLDcoin: maximum of 121,399,000 coins in a single wallet... this value does not dictate maximum number of coins on its own.
+const int64 julyFork = 45000;//29610//40000, remember to change this value to something very large like 200000000 if you want this client to behave as the old client
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 static const int COINBASE_MATURITY = 100;
 // Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp.

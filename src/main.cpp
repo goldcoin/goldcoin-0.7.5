@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
 // Copyright (c) 2011-2012 Litecoin Developers
-// Copyright (c) 2013-2014 GoldCoin (GLD) Developers
+// Copyright (c) 2013 GoldCoin (GLD) Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -869,6 +869,8 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
 		hardForkedJuly = true;
 		//nSubsidy = Calculate(400,julyFork,2,8,nHeight) * COIN;
         nSubsidy = (int64)(50.0/(1.1 + 0.49*((nHeight-julyFork)/262800))) * COIN;
+    } else {
+        nSubsidy = 0;
     }
     return nSubsidy + nFees;
 }
