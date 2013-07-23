@@ -15,7 +15,7 @@
     </message>
     <message>
         <location filename="../forms/aboutdialog.ui" line="97"/>
-        <source>Copyright © 2013-2014 GoldCoin (GLD) Developers
+        <source>Copyright © 2013 GoldCoin (GLD) Developers
 
 This is experimental software.
 
