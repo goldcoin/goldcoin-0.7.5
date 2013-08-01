@@ -13,18 +13,8 @@ Block rewards in order:
  - The Block reward drops to 45 GLD
  - Reward for the years thereafter is 50 divided by (1.1 + 0.49*every year after fork)
  - Total Blocks: 26,325,000
- - Total Coins Produced: 121,399,000 (including 50 coin 0th block)
+ - Total Coins Produced: 123,423,900 (including 50 coin 0th block)
  - The default ports are 8121 (connect) and 8122 (fson rpc)
-
-Notice the block fork number showed in this release is not necessarily the correct one.
-
-If you wish to use this code anyways, be sure to increase the blockFork number accordingly to a very large
-value until the fork is actually announced. Otherwise you may run into problems.
-
-The client will act and function the same way as the old client did then (with a few improvements :D )
-
-Don't say we didn't warn you :) (PS. Its the variable julyFork in the main.h file)
-
 
 Development process
 ===================
