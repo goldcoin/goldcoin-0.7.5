@@ -15,10 +15,15 @@ To Build
 --------
 
 cd src/
-make -f makefile.unix            # Headless gldcoin
+make -f makefile.unix  USE_IPV6=1 USE_UPNP=1 USE_QRCODE=1 32BIT=1         # Headless gldcoin
 
 See readme-qt.rst for instructions on building Litecoin-Qt,
 the graphical user interface.
+
+or for Qmake
+
+qmake bitcoin-qt-nix.pro USE_QRCODE=1 USE_UPNP=1 USE_IPV6=1
+make
 
 Dependencies
 ------------

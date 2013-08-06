@@ -2,7 +2,7 @@
 # Distributed under the MIT/X11 software license, see the accompanying
 # file license.txt or http://www.opensource.org/licenses/mit-license.php.
 
-USE_UPNP:=0
+USE_UPNP:=1
 
 DEFS=-DUSE_IPV6 -DBOOST_SPIRIT_THREADSAFE
 
@@ -13,6 +13,8 @@ TESTDEFS = -DTEST_DATA_DIR=$(abspath test/data)
 
 LMODE = dynamic
 LMODE2 = dynamic
+
+
 ifdef STATIC
 	LMODE = static
 	ifeq (${STATIC}, all)
@@ -84,10 +86,17 @@ LIBS+= \
 
 DEBUGFLAGS=-g
 
+ifdef 32BIT
+	CXXFLAGS = -m32
+endif
+
 # CXXFLAGS can be specified on the make command line, so we use xCXXFLAGS that only
 # adds some defaults in front. Unfortunately, CXXFLAGS=... $(CXXFLAGS) does not work.
 xCXXFLAGS=-O2 -pthread -Wall -Wextra -Wformat -Wformat-security -Wno-unused-parameter \
     $(DEBUGFLAGS) $(DEFS) $(HARDENING) $(CXXFLAGS)
+
+
+
 
 # LDFLAGS can be specified on the make command line, so we use xLDFLAGS that only
 # adds some defaults in front. Unfortunately, LDFLAGS=... $(LDFLAGS) does not work.
