@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = gldcoin-qt
 macx:TARGET = "GLDCoin-Qt"
-VERSION = 0.8.2
+VERSION = 0.6.9.3
 INCLUDEPATH += src src/json src/qt
 #C:/deps/boost C:/deps/boost/stage/lib c:/deps/db/build_unix c:/deps/ssl/include c:/deps/ssl c:/deps/miniupnpc c:/deps/
 QT += network

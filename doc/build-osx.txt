@@ -16,7 +16,7 @@ Douglas Huff <dhuff@jrbobdobbs.org>
 See readme-qt.rst for instructions on building Litecoin-QT, the
 graphical user interface.
 
-Tested on 10.5, 10.6 and 10.7 intel.  PPC is not supported because it's big-endian.
+Tested on 10.6, 10.7 and 10.8 intel.  PPC is not supported because it's big-endian.
 
 All of the commands should be executed in Terminal.app.. it's in
 /Applications/Utilities
@@ -28,11 +28,11 @@ install DVD, but if not, you can get the current version from https://developer.
 
 1.  Clone the github tree to get the source code:
 
-git clone git@github.com:gldcoin-project/gldcoin.git gldcoin
+git clone https://github.com/goldcoin/gldcoin.git
 
 2.  Download and install MacPorts from http://www.macports.org/
 
-2a. (for 10.7 Lion)
+2a. (for 10.7 Lion or higher)
     Edit /opt/local/etc/macports/macports.conf and uncomment "build_arch i386"
 
 3.  Install dependencies from MacPorts
@@ -45,7 +45,13 @@ sudo port install qrencode
 4.  Now you should be able to build gldcoind:
 
 cd gldcoin/src
-make -f makefile.osx USE_IPV6=1
+make -f makefile.osx USE_IPV6=1 USE_UPNP=1 USE_QRCODE=1 64BIT=1 RELEASE=1 STATIC=1
+
+or
+
+make -f makefile.osx USE_IPV6=1 USE_UPNP=1 USE_QRCODE=1 32BIT=1 RELEASE=1 STATIC=1
+
+Note: You cannot use both 64BIT=1 and 32BIT=1, as it will simply default to 32BIT
 
 Run:
   ./gldcoind --help  # for a list of command-line options.
@@ -53,3 +59,8 @@ Run
   ./gldcoind -daemon # to start the gldcoin daemon.
 Run
   ./gldcoind help # When the daemon is running, to get a list of RPC commands
+
+5. To make the QT navigate to the root directory of the project, and use the following set of commands:
+
+QMAKE bitcoin-qt-nix.pro RELEASE=1 USE_QRCODE=1 USE_UPNP=1 USE_IPV6=1
+make
