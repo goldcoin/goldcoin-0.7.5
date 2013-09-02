@@ -63,7 +63,7 @@
           <cursorShape>IBeamCursor</cursorShape>
          </property>
          <property name="text">
-          <string notr="true">0.3.666-beta</string>
+          <string notr="true">0.6.9.4-beta</string>
          </property>
          <property name="textFormat">
           <enum>Qt::RichText</enum>
