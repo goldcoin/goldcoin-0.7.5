@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     // Do this early as we don't want to bother initializing if we are just calling IPC
     for (int i = 1; i < argc; i++)
     {
-        if (boost::algorithm::istarts_with(argv[i], "gldcoin:"))
+        if (boost::algorithm::istarts_with(argv[i], "goldcoin:"))
         {
             const char *strURI = argv[i];
             try {
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
                     // if URI could be sent to the message queue exit here
                     exit(0);
                 else
-                    // if URI could not be sent to the message queue do a normal Bitcoin-Qt startup
+                    // if URI could not be sent to the message queue do a normal GoldCoin-QT startup
                     break;
             }
             catch (boost::interprocess::interprocess_exception &ex) {
@@ -169,12 +169,12 @@ int main(int argc, char *argv[])
 
     // Application identification (must be set before OptionsModel is initialized,
     // as it is used to locate QSettings)
-    app.setOrganizationName("GLDcoin");
+    app.setOrganizationName("GoldCoin (GLD)");
     app.setOrganizationDomain("gldcoin.com");
     if(GetBoolArg("-testnet")) // Separate UI settings for testnet
-        app.setApplicationName("GLDcoin-Qt-testnet");
+        app.setApplicationName("GoldCoin-Qt-testnet");
     else
-        app.setApplicationName("GLDcoin-Qt");
+        app.setApplicationName("GoldCoin-Qt");
 
     // ... then GUI settings:
     OptionsModel optionsModel;
@@ -278,7 +278,7 @@ int main(int argc, char *argv[])
                 // Check for URI in argv
                 for (int i = 1; i < argc; i++)
                 {
-                    if (boost::algorithm::istarts_with(argv[i], "gldcoin:"))
+                    if (boost::algorithm::istarts_with(argv[i], "goldcoin:"))
                     {
                         const char *strURI = argv[i];
                         try {
@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
                 window.setWalletModel(0);
                 guiref = 0;
             }
-            // Shutdown the core and it's threads, but don't exit Bitcoin-Qt here
+            // Shutdown the core and it's threads, but don't exit GoldCoin-QT here
             Shutdown(NULL);
         }
         else

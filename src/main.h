@@ -33,7 +33,7 @@ static const unsigned int MAX_BLOCK_SIGOPS = MAX_BLOCK_SIZE/50;
 static const unsigned int MAX_ORPHAN_TRANSACTIONS = MAX_BLOCK_SIZE/100;
 static const int64 MIN_TX_FEE = 10000000;
 static const int64 MIN_RELAY_TX_FEE = MIN_TX_FEE;
-static const int64 MAX_MONEY = 121399000 * COIN; // GLDcoin: maximum of 121,399,000 coins in a single wallet... this value does not dictate maximum number of coins on its own.
+static const int64 MAX_MONEY = 121399000 * COIN; // GoldCoin (GLD): maximum of 121,399,000 coins in a single wallet... this value does not dictate maximum number of coins on its own.
 const int64 julyFork = 45000;//29610//40000, remember to change this value to something very large like 200000000 if you want this client to behave as the old client
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 static const int COINBASE_MATURITY = 100;
@@ -540,7 +540,7 @@ public:
     {
         // Large (in bytes) low-priority (new, small-coin) transactions
         // need a fee.
-        return dPriority > COIN * 576 / 250; // GLDcoin: 576 blocks found a day. Priority cutoff is 1 GLDcoin day / 250 bytes.
+        return dPriority > COIN * 576 / 250; // GoldCoin (GLD): 576 blocks found a day. Priority cutoff is 1 GoldCoin (GLD) day / 250 bytes.
     }
 
     int64 GetMinFee(unsigned int nBlockSize=1, bool fAllowFree=true, enum GetMinFee_mode mode=GMF_BLOCK) const

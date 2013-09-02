@@ -24,10 +24,10 @@
 //static unsigned char pchMessageStartTestNew[4] = { 0xcb, 0xf2, 0xc0, 0xef };
 //static unsigned int nMessageStartTestSwitchTime = 1346200000;
 
-// GLDCoin message start (switch from Litecoin's in v0.69)
+// GoldCoin message start (switch from Litecoin's in v0.69)
 
 static unsigned char pchMessageStartLiteCoin[4] = { 0xfb, 0xc0, 0xb6, 0xdb };
-static unsigned char pchMessageStartGLDCoin[4] = { 0xfd, 0xc2, 0xb4, 0xdd };
+static unsigned char pchMessageStartGoldCoin[4] = { 0xfd, 0xc2, 0xb4, 0xdd };
 //static unsigned int nMessageStartSwitchTime = 1347300000;
 
 void GetMessageStart(unsigned char pchMessageStart[], bool fPersistent)
@@ -35,12 +35,12 @@ void GetMessageStart(unsigned char pchMessageStart[], bool fPersistent)
     /*if (fTestNet)
         memcpy(pchMessageStart, (fPersistent || GetAdjustedTime() > nMessageStartTestSwitchTime)? pchMessageStartTestNew : pchMessageStartTestOld, sizeof(pchMessageStartTestNew));
     else*/
-        memcpy(pchMessageStart, (fPersistent || hardForkedJuly)? pchMessageStartGLDCoin : pchMessageStartLiteCoin, sizeof(pchMessageStartGLDCoin));
+        memcpy(pchMessageStart, (fPersistent || hardForkedJuly)? pchMessageStartGoldCoin : pchMessageStartLiteCoin, sizeof(pchMessageStartGoldCoin));
 }
 
 void GetMessageStart2(unsigned char pchMessageStart[])
 {
-	memcpy(pchMessageStart, (!hardForkedJuly)? pchMessageStartGLDCoin : pchMessageStartLiteCoin, sizeof(pchMessageStartGLDCoin));
+	memcpy(pchMessageStart, (!hardForkedJuly)? pchMessageStartGoldCoin : pchMessageStartLiteCoin, sizeof(pchMessageStartGoldCoin));
 }
 
 static const char* ppszTypeName[] =
@@ -90,7 +90,7 @@ bool CMessageHeader::IsValid() const
     unsigned char pchMessageStartProtocol[4];
     GetMessageStart(pchMessageStartProtocol);
     //if (memcmp(pchMessageStart, ::pchMessageStart, sizeof(pchMessageStart)) != 0 && memcmp(pchMessageStart2, ::pchMessageStart2, sizeof(pchMessageStart2)) != 0)
-    if (memcmp(pchMessageStart, pchMessageStartProtocol, sizeof(pchMessageStart)) != 0 && memcmp(pchMessageStart, (!hardForkedJuly)? pchMessageStartGLDCoin : pchMessageStartLiteCoin, sizeof(pchMessageStart)) != 0)
+    if (memcmp(pchMessageStart, pchMessageStartProtocol, sizeof(pchMessageStart)) != 0 && memcmp(pchMessageStart, (!hardForkedJuly)? pchMessageStartGoldCoin : pchMessageStartLiteCoin, sizeof(pchMessageStart)) != 0)
 		return false;
 
     // Check the command string for errors

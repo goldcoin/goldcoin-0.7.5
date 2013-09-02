@@ -16,7 +16,7 @@
 #include "netbase.h"
 #include <string>
 #include "uint256.h"
-#define GLDCOIN_PORT  8121
+#define GOLDCOIN_PORT  8121
 #define RPC_PORT     8122
 #define TESTNET_PORT 18121
 
@@ -26,7 +26,7 @@ void GetMessageStart(unsigned char pchMessageStart[], bool fPersistent = false);
 void GetMessageStart2(unsigned char pchMessageStart[]);
 static inline unsigned short GetDefaultPort(const bool testnet = fTestNet)
 {
-    return testnet ? TESTNET_PORT : GLDCOIN_PORT;
+    return testnet ? TESTNET_PORT : GOLDCOIN_PORT;
 }
 
 /** Message header.
