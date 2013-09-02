@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 2.7.1, 2013-07-21T02:57:21. -->
+<!-- Written by QtCreator 2.7.1, 2013-09-02T11:20:57. -->
 <qtcreator>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -66,7 +66,7 @@
       <value type="QByteArray" key="ProjectExplorer.ProjectConfiguration.Id">QtProjectManager.QMakeBuildStep</value>
       <value type="bool" key="QtProjectManager.QMakeBuildStep.LinkQmlDebuggingLibrary">false</value>
       <value type="bool" key="QtProjectManager.QMakeBuildStep.LinkQmlDebuggingLibraryAuto">false</value>
-      <value type="QString" key="QtProjectManager.QMakeBuildStep.QMakeArguments">-spec win32-g++ &quot;RELEASE=1&quot; &quot;USE_UPNP=1&quot; &quot;USE_IPV6=1&quot;</value>
+      <value type="QString" key="QtProjectManager.QMakeBuildStep.QMakeArguments">-spec win32-g++ &quot;RELEASE=1&quot; &quot;USE_UPNP=1&quot; &quot;USE_IPV6=1&quot; &quot;USE_QRCODE=1&quot;</value>
       <value type="bool" key="QtProjectManager.QMakeBuildStep.QMakeForced">false</value>
      </valuemap>
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.1">

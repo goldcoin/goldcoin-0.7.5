@@ -1,6 +1,6 @@
 rmdir /s /Q obj
-del gldcoind.exe
+del goldcoind.exe
 mkdir obj
-mingw32-make -f makefile.mingw STATIC=1
-strip gldcoind.exe
+mingw32-make -f makefile.mingw STATIC=1 USE_UPNP=1 USE_IPV6=1 USE_QRCODE=1
+strip goldcoind.exe
 pause

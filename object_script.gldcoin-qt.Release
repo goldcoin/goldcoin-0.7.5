@@ -60,6 +60,7 @@ INPUT(
 ./build\scrypt.o
 ./build\miningpage.o
 ./build\noui.o
+./build\qrcodedialog.o
 ./build\moc_bitcoingui.o
 ./build\moc_transactiontablemodel.o
 ./build\moc_addresstablemodel.o
@@ -89,5 +90,6 @@ INPUT(
 ./build\moc_notificator.o
 ./build\moc_miningpage.o
 ./build\moc_rpcconsole.o
+./build\moc_qrcodedialog.o
 ./build\qrc_bitcoin.o
 );

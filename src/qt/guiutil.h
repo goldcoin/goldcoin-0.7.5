@@ -15,7 +15,7 @@ class QAbstractItemView;
 QT_END_NAMESPACE
 class SendCoinsRecipient;
 
-/** Utility functions used by the GLDcoin Qt UI.
+/** Utility functions used by the GoldCoin (GLD) Qt UI.
  */
 namespace GUIUtil
 {
@@ -23,14 +23,14 @@ namespace GUIUtil
     QString dateTimeStr(const QDateTime &datetime);
     QString dateTimeStr(qint64 nTime);
 
-    // Render GLDcoin addresses in monospace font
+    // Render GoldCoin (GLD) addresses in monospace font
     QFont bitcoinAddressFont();
 
     // Set up widgets for address and amounts
     void setupAddressWidget(QLineEdit *widget, QWidget *parent);
     void setupAmountWidget(QLineEdit *widget, QWidget *parent);
 
-    // Parse "gldcoin:" URI into recipient object, return true on succesful parsing
+    // Parse "goldcoin:" URI into recipient object, return true on succesful parsing
     // See Bitcoin URI definition discussion here: https://bitcointalk.org/index.php?topic=33490.0
     bool parseBitcoinURI(const QUrl &uri, SendCoinsRecipient *out);
     bool parseBitcoinURI(QString uri, SendCoinsRecipient *out);
@@ -95,7 +95,7 @@ namespace GUIUtil
     bool GetStartOnSystemStartup();
     bool SetStartOnSystemStartup(bool fAutoStart);
 
-    /** Help message for GLDcoin-Qt, shown with --help. */
+    /** Help message for GoldCoin-Qt, shown with --help. */
     class HelpMessageBox : public QMessageBox
     {
         Q_OBJECT

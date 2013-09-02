@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>GLDcoin - Debug window</string>
+   <string>GoldCoin (GLD) - Debug window</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
@@ -299,7 +299,7 @@
        <item row="14" column="0">
         <widget class="QPushButton" name="openDebugLogfileButton">
          <property name="toolTip">
-          <string>Open the GLDcoin debug logfile from the current data directory. This can take a few seconds for large logfiles.</string>
+          <string>Open the GoldCoin (GLD) debug logfile from the current data directory. This can take a few seconds for large logfiles.</string>
          </property>
          <property name="text">
           <string>&amp;Open</string>
@@ -325,7 +325,7 @@
        <item row="17" column="0">
         <widget class="QPushButton" name="showCLOptionsButton">
          <property name="toolTip">
-          <string>Show the GLDcoin-Qt help message to get a list with possible GLDcoin command-line options.</string>
+          <string>Show the GoldCoin-Qt help message to get a list with possible GoldCoin (GLD) command-line options.</string>
          </property>
          <property name="text">
           <string>&amp;Show</string>
