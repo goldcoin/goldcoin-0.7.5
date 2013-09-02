@@ -35,12 +35,12 @@ void GetMessageStart(unsigned char pchMessageStart[], bool fPersistent)
     /*if (fTestNet)
         memcpy(pchMessageStart, (fPersistent || GetAdjustedTime() > nMessageStartTestSwitchTime)? pchMessageStartTestNew : pchMessageStartTestOld, sizeof(pchMessageStartTestNew));
     else*/
-        memcpy(pchMessageStart, (fPersistent || hardForkedJuly)? pchMessageStartGoldCoin : pchMessageStartLiteCoin, sizeof(pchMessageStartGoldCoin));
+        memcpy(pchMessageStart, pchMessageStartGoldCoin, sizeof(pchMessageStartGoldCoin));
 }
 
 void GetMessageStart2(unsigned char pchMessageStart[])
 {
-	memcpy(pchMessageStart, (!hardForkedJuly)? pchMessageStartGoldCoin : pchMessageStartLiteCoin, sizeof(pchMessageStartGoldCoin));
+	memcpy(pchMessageStart, pchMessageStartLiteCoin, sizeof(pchMessageStartGoldCoin));
 }
 
 static const char* ppszTypeName[] =
@@ -90,7 +90,7 @@ bool CMessageHeader::IsValid() const
     unsigned char pchMessageStartProtocol[4];
     GetMessageStart(pchMessageStartProtocol);
     //if (memcmp(pchMessageStart, ::pchMessageStart, sizeof(pchMessageStart)) != 0 && memcmp(pchMessageStart2, ::pchMessageStart2, sizeof(pchMessageStart2)) != 0)
-    if (memcmp(pchMessageStart, pchMessageStartProtocol, sizeof(pchMessageStart)) != 0 && memcmp(pchMessageStart, (!hardForkedJuly)? pchMessageStartGoldCoin : pchMessageStartLiteCoin, sizeof(pchMessageStart)) != 0)
+    if (memcmp(pchMessageStart, pchMessageStartProtocol, sizeof(pchMessageStart)) != 0 && memcmp(pchMessageStart, pchMessageStartLiteCoin, sizeof(pchMessageStart)) != 0)
 		return false;
 
     // Check the command string for errors
