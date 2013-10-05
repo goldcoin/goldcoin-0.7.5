@@ -14,9 +14,9 @@
 
 // These need to be macro's, as version.cpp's voodoo requires it
 #define CLIENT_VERSION_MAJOR       0
-#define CLIENT_VERSION_MINOR       6
-#define CLIENT_VERSION_REVISION    9
-#define CLIENT_VERSION_BUILD       4
+#define CLIENT_VERSION_MINOR       7
+#define CLIENT_VERSION_REVISION    0
+#define CLIENT_VERSION_BUILD       0
 
 static const int CLIENT_VERSION =
                            1000000 * CLIENT_VERSION_MAJOR
@@ -32,7 +32,7 @@ extern const std::string CLIENT_DATE;
 // network protocol versioning
 //
 
-static const int PROTOCOL_VERSION = 60003;
+static const int PROTOCOL_VERSION = 60004;
 
 static const int MIN_PROTO_VERSION = 293;
 // earlier versions not supported as of July 2013, and are disconnected

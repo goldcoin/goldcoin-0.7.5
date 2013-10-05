@@ -59,6 +59,15 @@ const Object emptyobj;
 
 void ThreadRPCServer3(void* parg);
 
+struct BlockSection
+{
+    int height;
+    double difficulty;
+    int64 time;
+    double timeDiff;
+    double hashrate;
+}; 
+
 Object JSONRPCError(int code, const string& message)
 {
     Object error;
@@ -312,14 +321,15 @@ Value getdifficulty(const Array& params, bool fHelp)
     return GetDifficulty();
 }
 
-
-// Litecoin: Return average network hashes per second based on last number of blocks.
+//eric
 Value GetNetworkHashPS(int lookup) {
+	/*
+	// Litecoin: Return average network hashes per second based on last number of blocks.
     if (pindexBest == NULL)
         return 0;
 
     // If lookup is -1, then use blocks since last difficulty change.
-    if (lookup <= 0)
+    if (lookup <= 0)0
         lookup = pindexBest->nHeight % 60 + 1;
 
     // If lookup is larger than chain, then set it to chain length.
@@ -333,7 +343,100 @@ Value GetNetworkHashPS(int lookup) {
     double timeDiff = pindexBest->GetBlockTime() - pindexPrev->GetBlockTime();
     double timePerBlock = timeDiff / lookup;
 
-    return (boost::int64_t)(((double)GetDifficulty() * pow(2.0, 32)) / timePerBlock);
+    return (boost::int64_t)(((double)GetDifficulty() * pow(2.0, 32)) / timePerBlock);*/
+	//GoldCoin: return average network hashes per second based on last number of blocks, taking difficulty into account
+	if (pindexBest == NULL)
+    return 0;
+  
+    printf("GetNetworkHashPS(%d)\n", lookup);
+  
+    // If lookup is -1, then use blocks since last difficulty change.
+    if (lookup <= 0)
+        lookup = pindexBest->nHeight % 60 + 1;
+  
+    // If lookup is larger than chain, then set it to chain length.
+    if (lookup > pindexBest->nHeight)
+        lookup = pindexBest->nHeight;
+  
+    if (lookup > (pindexBest->nHeight - julyFork))
+        lookup = pindexBest->nHeight - julyFork;
+  
+    int sectionCount = (lookup / 60)+3;
+    int currentSection = 0;
+    BlockSection * sections = new BlockSection[sectionCount];
+  
+    //setup the first section
+    sections[0].height = pindexBest->nHeight;
+    sections[0].difficulty = GetDifficulty(pindexBest);
+    sections[0].hashrate = 0;
+    sections[0].time = pindexBest->nTime;
+    sections[0].timeDiff = 0;
+  
+    CBlockIndex* pindexPrev = pindexBest;
+  
+    printf("GetTrueNetworkHashPS(%d) - modified lookup\n", lookup);
+    printf(" best index = %d\n difficulty = %f\n", pindexBest->nHeight, sections[0].difficulty);
+  
+  
+    for (int i = 0; i < lookup; i++)
+    {
+        if((pindexPrev->nHeight % 60) == 0)
+        {
+  
+            pindexPrev = pindexPrev->pprev;
+            ++currentSection;
+            sections[currentSection].height = pindexPrev->nHeight;
+            sections[currentSection].difficulty = GetDifficulty(pindexPrev);
+            sections[currentSection].hashrate = 0;
+            sections[currentSection].time = pindexPrev->nTime;
+  
+            sections[currentSection-1].timeDiff = sections[currentSection-1].time - sections[currentSection].time;
+            sections[currentSection-1].hashrate = (sections[currentSection-1].difficulty * pow(2.0, 32)) / (sections[currentSection-1].timeDiff / (sections[currentSection-1].height - sections[currentSection].height));
+            printf(" hashrate for section: %f MH/s, time diff = %d min\n", sections[currentSection-1].hashrate/1000000, sections[currentSection-1].timeDiff/60);
+            printf(" ====difficulty change at block %d\n", pindexPrev->nHeight+1);
+            printf(" height = %d, difficulty = %f\n", sections[currentSection].height, sections[currentSection].difficulty);
+        }
+  
+        else pindexPrev = pindexPrev->pprev;
+    }
+  
+    //setup end section
+    CBlockIndex * pindexLast = pindexPrev;//->pprev;
+  
+    ++currentSection;
+    sections[currentSection].height = pindexLast->nHeight;
+    sections[currentSection].difficulty = GetDifficulty(pindexLast);
+    sections[currentSection].hashrate = 0;
+    sections[currentSection].time = pindexLast->nTime;
+    sections[currentSection].timeDiff = -1;
+  
+    sections[currentSection-1].timeDiff = sections[currentSection-1].time - sections[currentSection].time;
+    if(sections[currentSection-1].height != sections[currentSection].height)
+        sections[currentSection-1].hashrate = (sections[currentSection-1].difficulty * pow(2.0, 32)) / (sections[currentSection-1].timeDiff / (sections[currentSection-1].height - sections[currentSection].height));
+    else sections[currentSection-1].hashrate = 0;
+  
+  
+    int64 result = 0.0;
+  
+    double sumHashXtimeDiff = 0.0;
+  
+    double timeDiff = pindexBest->GetBlockTime() - pindexPrev->GetBlockTime();
+  
+    for(int i = 0; i < (sectionCount-1); ++i)
+    {
+        sumHashXtimeDiff += sections[i].hashrate * sections[i].timeDiff;
+    }
+  
+    //double timeDiff = pindexBest->GetBlockTime() - pindexPrev->GetBlockTime();
+    //double timePerBlock = timeDiff / lookup;
+  
+    //   return /*(boost::int64_t)*/(((double)GetDifficulty() * pow(2.0, 32)) / timePerBlock);
+  
+    result = (int64)(sumHashXtimeDiff / timeDiff);
+    printf("returning hashrate %f MH/s, lookup %d (time difference = %.1f)\n", result/1000000, lookup, timeDiff/60);
+    delete [] sections;
+    return result; 
+	
 }
 
 Value getnetworkhashps(const Array& params, bool fHelp)
@@ -2316,9 +2419,110 @@ Value getblock(const Array& params, bool fHelp)
     return blockToJSON(block, pblockindex);
 }
 
+//amir
+//As requested by dreamwatcher
+//Note, because of the way blocks are stored in the map, this function is extremely intensive!
+//TODO: find a better way to do this
+Value getblockbyheight(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+            "getblockbyheight <index>\n"
+            "Returns hash of block in best-block-chain at <index>.");
+
+    int nHeight = params[0].get_int();
+    if (nHeight < 0 || nHeight > nBestHeight)
+        throw runtime_error("Block number out of range.");
+
+    CBlockIndex* pblockindex2 = mapBlockIndex[hashBestChain];
+    while (pblockindex2->nHeight > nHeight)
+        pblockindex2 = pblockindex2->pprev;
+
+    std::string strHash = pblockindex2->phashBlock->GetHex();
+
+    uint256 hash(strHash);
+
+    if (mapBlockIndex.count(hash) == 0)
+        throw JSONRPCError(-5, "Block not found");
+
+    CBlock block;
+    CBlockIndex* pblockindex = mapBlockIndex[hash];
+    block.ReadFromDisk(pblockindex, true);
+
+    return blockToJSON(block, pblockindex);
+}
 
 
+// Send alert (first introduced in ppcoin)
+// There is a known deadlock situation with ThreadMessageHandler
+// ThreadMessageHandler: holds cs_vSend and acquiring cs_main in SendMessages()
+// ThreadRPCServer: holds cs_main and acquiring cs_vSend in alert.RelayTo()/PushMessage()/BeginMessage()
+Value sendalert(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 6)
+        throw runtime_error(
+            "sendalert <message> <privatekey> <minver> <maxver> <priority> <id> [cancelupto]\n"
+            "<message> is the alert text message\n"
+            "<privatekey> is base58 hex string of alert master private key\n"
+            "<minver> is the minimum applicable internal client version\n"
+            "<maxver> is the maximum applicable internal client version\n"
+            "<priority> is integer priority number\n"
+            "<id> is the alert id\n"
+            "[cancelupto] cancels all alert id's up to this number\n"
+            "Returns true or false.");
 
+    // Prepare the alert message
+    CAlert alert;
+    alert.strStatusBar = params[0].get_str();
+    alert.nMinVer = params[2].get_int();
+    alert.nMaxVer = params[3].get_int();
+    alert.nPriority = params[4].get_int();
+    alert.nID = params[5].get_int();
+    if (params.size() > 6)
+        alert.nCancel = params[6].get_int();
+    alert.nVersion = PROTOCOL_VERSION;
+    alert.nRelayUntil = GetAdjustedTime() + 365*24*60*60;
+    alert.nExpiration = GetAdjustedTime() + 365*24*60*60;
+
+    CDataStream sMsg(SER_NETWORK, PROTOCOL_VERSION);
+    sMsg << (CUnsignedAlert)alert;
+    alert.vchMsg = vector<unsigned char>(sMsg.begin(), sMsg.end());
+
+    // Prepare master key and sign alert message
+    CBitcoinSecret vchSecret;
+    if (!vchSecret.SetString(params[1].get_str()))
+        throw runtime_error("Invalid alert master key");
+    CKey key;
+    bool fCompressed;
+    CSecret secret = vchSecret.GetSecret(fCompressed);
+    key.SetSecret(secret, fCompressed); // if key is not correct openssl may crash
+    if (!key.Sign(Hash(alert.vchMsg.begin(), alert.vchMsg.end()), alert.vchSig))
+        throw runtime_error(
+            "Unable to sign alert, check alert master key?\n");
+
+    // Process alert
+    if(!alert.ProcessAlert())
+        throw runtime_error(
+            "Failed to process alert.\n");
+
+    // Relay alert
+    {
+        LOCK(cs_vNodes);
+        BOOST_FOREACH(CNode* pnode, vNodes)
+            alert.RelayTo(pnode);
+    }
+
+    Object result;
+    result.push_back(Pair("strStatusBar", alert.strStatusBar));
+    result.push_back(Pair("nVersion", alert.nVersion));
+    result.push_back(Pair("nMinVer", alert.nMinVer));
+    result.push_back(Pair("nMaxVer", alert.nMaxVer));
+    result.push_back(Pair("nPriority", alert.nPriority));
+    result.push_back(Pair("nID", alert.nID));
+    if (alert.nCancel > 0)
+        result.push_back(Pair("nCancel", alert.nCancel));
+    return result;
+}
 
 
 
@@ -2337,6 +2541,7 @@ static const CRPCCommand vRPCCommands[] =
     { "getpeerinfo",            &getpeerinfo,            true },
     { "getdifficulty",          &getdifficulty,          true },
     { "getnetworkhashps",       &getnetworkhashps,       true },
+	{ "sendalert",				&sendalert,				 true },
     { "getgenerate",            &getgenerate,            true },
     { "setgenerate",            &setgenerate,            true },
     { "gethashespersec",        &gethashespersec,        true },
@@ -2367,6 +2572,7 @@ static const CRPCCommand vRPCCommands[] =
     { "getrawmempool",          &getrawmempool,          true },
     { "getblock",               &getblock,               false },
     { "getblockhash",           &getblockhash,           false },
+	{ "getblockbyheight",       &getblockbyheight,		 false },
     { "gettransaction",         &gettransaction,         false },
     { "listtransactions",       &listtransactions,       false },
     { "signmessage",            &signmessage,            false },
@@ -3272,6 +3478,8 @@ Array RPCConvertValues(const std::string &strMethod, const std::vector<std::stri
     if (strMethod == "listreceivedbyaccount"  && n > 1) ConvertTo<bool>(params[1]);
     if (strMethod == "getbalance"             && n > 1) ConvertTo<boost::int64_t>(params[1]);
     if (strMethod == "getblockhash"           && n > 0) ConvertTo<boost::int64_t>(params[0]);
+	if (strMethod == "getblockbyheight"       && n > 0) ConvertTo<boost::int64_t>(params[0]);
+	if (strMethod == "getnetworkhashps"       && n > 0) ConvertTo<boost::int64_t>(params[0]);
     if (strMethod == "move"                   && n > 2) ConvertTo<double>(params[2]);
     if (strMethod == "move"                   && n > 3) ConvertTo<boost::int64_t>(params[3]);
     if (strMethod == "sendfrom"               && n > 2) ConvertTo<double>(params[2]);

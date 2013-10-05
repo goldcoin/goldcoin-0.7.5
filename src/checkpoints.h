@@ -21,9 +21,14 @@ namespace Checkpoints
 
     // Return conservative estimate of total number of blocks, 0 if unknown
     int GetTotalBlocksEstimate();
+	
+	// Add a checkpoint (only in memory!)
+	void addCheckpoint(int nHeight, uint256 hash);
 
     // Returns last CBlockIndex* in mapBlockIndex that is a checkpoint
     CBlockIndex* GetLastCheckpoint(const std::map<uint256, CBlockIndex*>& mapBlockIndex);
+	
+	
 }
 
 #endif
