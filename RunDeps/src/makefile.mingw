@@ -9,14 +9,19 @@ INCLUDEPATHS= \
  -I"C:\deps\db\build_unix" \
  -I"C:\deps\ssl\include" \
  -I"C:\Qt\4.8.4\src\corelib\tools" \
- -I"C:\Qt\4.8.4\include"
+ -I"C:\Qt\4.8.4\include" \
+ -I"C:\Qt\4.8.4\include\QtCore" \
+ -I"C:\Qt\4.8.4\bin"
 
 LIBPATHS= \
  -L"C:\deps\boost" \
  -L"C:\deps\db\build_unix" \
  -L"C:\deps\ssl" \
  -L"C:\Qt\4.8.4\src\corelib\tools" \
- -L"C:\Qt\4.8.4\include"
+ -L"C:\Qt\4.8.4\include" \
+ -L"C:\Qt\4.8.4\include\QtCore" \
+ -L"C:\Qt\4.8.4\lib" \
+ -L"C:\Qt\4.8.4\bin"
 
 LIBS= \
  -l boost_system-mgw46-mt-sd-1_53 \
@@ -26,9 +31,9 @@ LIBS= \
  -l db_cxx \
  -l ssl \
  -l crypto \
- -l QtCore \
- -l QtGui \
- -l QtWebKit
+ -l QtCored4 \
+ -l QtGuid4 \
+ -l QtWebKitd4
 
 BOOST_INCLUDE_PATH=C:/deps/boost
 BOOST_LIB_PATH=C:/deps/boost/stage/lib
@@ -39,7 +44,7 @@ OPENSSL_LIB_PATH=c:/deps/ssl
 MINIUPNPC_LIB_PATH=c:/deps/miniupnpc
 MINIUPNPC_INCLUDE_PATH=c:/deps
 
-LIBS += -L"C:/deps/boost" -L"c:/deps/boost/stage/lib" -L"c:/deps/db/build_unix" -L"c:/deps/ssl/include" -L"c:/deps/ssl" -L"c:/deps/miniupnpc" -L"c:/deps" -L"C:/Qt/4.8.4/src/corelib/tools"
+LIBS += -L"C:/deps/boost" -L"c:/deps/boost/stage/lib" -L"c:/deps/db/build_unix" -L"c:/deps/ssl/include" -L"c:/deps/ssl" -L"c:/deps/miniupnpc" -L"c:/deps" -L"C:/Qt/4.8.4/src/corelib/tools" -L"C:\Qt\4.8.4\lib" -L"C:\Qt\4.8.4\bin"  -L"C:\Qt\4.8.4\include" -L"C:\Qt\4.8.4\include\QtCore"
 
 DEFS=-DWIN32 -D_WINDOWS -DBOOST_THREAD_USE_LIB -DBOOST_SPIRIT_THREADSAFE -DUSE_IPV6
 DEBUGFLAGS=-g
