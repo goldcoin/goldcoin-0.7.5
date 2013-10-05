@@ -26,7 +26,11 @@
 
 // GoldCoin message start (switch from Litecoin's in v0.69)
 
-static unsigned char pchMessageStartLiteCoin[4] = { 0xfb, 0xc0, 0xb6, 0xdb };
+//static unsigned char pchMessageStartLiteCoin[4] = { 0xfb, 0xc0, 0xb6, 0xdb };
+
+//Kept for use in future Forks
+static unsigned char pchMessageStartLiteCoin[4] = { 0xfd, 0xc2, 0xb4, 0xdb };
+
 static unsigned char pchMessageStartGoldCoin[4] = { 0xfd, 0xc2, 0xb4, 0xdd };
 //static unsigned int nMessageStartSwitchTime = 1347300000;
 

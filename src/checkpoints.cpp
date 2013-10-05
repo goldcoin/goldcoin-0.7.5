@@ -12,6 +12,7 @@
 
 #include "main.h"
 #include "uint256.h"
+#include <string.h>
 
 namespace Checkpoints
 {
@@ -41,11 +42,8 @@ namespace Checkpoints
 			(     20160, uint256("0xe19b119f4a633d89320d502e7c05b88d083acdff3b4bd40efcdca54b25f6cb2c"))
 			(     20500, uint256("0x23ab64ad71d7191c28010c7c1b0b35d32ac97ace893dbb20068a6abb617f80a4"))
 			(     24000, uint256("0xc3cf2892cbaaf8b88565f027460bda831a428bf6ea76fafa870bf3586dd07c5f"))
-			(     26000, uint256("0x906a76b3b36aa7f489ea0ee38c180d0eebaf489e4998e6aefa806fadc687e475"))
-			(     27000, uint256("0xf7391f58e29d057f152b9c124af6153dadb62385d8728118e9cef728d9a4d16d"))
 			(     27000, uint256("0xf7391f58e29d057f152b9c124af6153dadb62385d8728118e9cef728d9a4d16d"))
 			(     28000, uint256("0x28adf712f2a7d9d7ab3836249c9e2beff8d0deb362a1991c61cb61c0fe9af10b"))
-			(     29000, uint256("0x0aca7e1d7cebe224479db62d9887bba7e8dbf5cc295261b6b2e9b9bc76f58ab1"))
 			(     29000, uint256("0x0aca7e1d7cebe224479db62d9887bba7e8dbf5cc295261b6b2e9b9bc76f58ab1"))
 			(     30000, uint256("0x1ff80eac17ba7efc350d65d842cbedd5822b4bef3eae7b1c24424c0d5cc2af51"))
 			(     31000, uint256("0xe9a24595526e9c67357e3a5962e8d489a867573eef1ea104de6be113d26512de"))
@@ -55,6 +53,8 @@ namespace Checkpoints
 			(     60000, uint256("0xf03feaab75843a39be8cf0fbf8bdae3056aebd4817b89a99e4837db2bdd2659a"))
 			(     65000, uint256("0xb635ce68527e8b777f68a71fe441faab285fa7aafd78259ddc24843539bba369"))
 			(     66000, uint256("0xf619fc8b01c1aedcf4623cea7d85310db85174e27e1b3069dadf76e9bc2f6c99"))
+			(     82900, uint256("0xd411f2115353a132b425c498be3e521b6dbabc424259ce9cba822da46cc41ba4"))
+			(	  86000, uint256("0x5a4fac33aa961451860b15dd8a8adfe5c6a0e0ce3fee503ff5b9e5162f2a7ccf"))
 			;
 
 
@@ -72,6 +72,11 @@ namespace Checkpoints
         if (fTestNet) return 0;
         return mapCheckpoints.rbegin()->first;
     }
+	
+	void addCheckpoint(int nHeight, uint256 hash) 
+	{
+        mapCheckpoints.insert(std::pair<int, uint256>(nHeight,hash));
+	}
 
     CBlockIndex* GetLastCheckpoint(const std::map<uint256, CBlockIndex*>& mapBlockIndex)
     {

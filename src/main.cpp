@@ -14,6 +14,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <math.h>
+#include <qdatetime.h>
+#include <time.h>
 
 using namespace std;
 using namespace boost;
@@ -62,6 +64,22 @@ int64 nTransactionFee = 0;
 int64 nMinimumInputValue = CENT / 100;
 
 bool hardForkedJuly = false;
+
+struct blockInfo {
+	int64 timeStamp;
+	std::string peerIp;
+};
+
+std::vector<blockInfo> lastFiveBlocks;
+
+//Schedule CheckPoint Block
+//-1 if no checkpoint is to be done.
+int checkpointBlockNum = -1;
+
+//Delay block-transmittance by 14 minutes flag (51% defence)
+bool defenseDelayActive = false;
+time_t defenseStartTime;
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -1946,6 +1964,11 @@ bool CBlock::AcceptBlock()
                 pnode->PushInventory(CInv(MSG_BLOCK, hash));
     }
 
+	//Checkpoint this block in memory, if it is a checkpoint block
+	if(checkpointBlockNum == nHeight && checkpointBlockNum != -1) {
+		Checkpoints::addCheckpoint(nHeight,hash);
+		checkpointBlockNum = -1;
+	}
     return true;
 }
 
@@ -1961,8 +1984,123 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
     // Preliminary checks
     if (!pblock->CheckBlock())
         return error("ProcessBlock() : CheckBlock FAILED");
-
+		
     CBlockIndex* pcheckpoint = Checkpoints::GetLastCheckpoint(mapBlockIndex);
+	
+	
+		
+		//Structure Reference
+		/*
+		//Structure used to hold blockDate/Peer Ip 
+		struct blockInfo {
+			int64 timeStamp;
+			std::string peerIp;
+		};
+		std::vector<blockInfo> lastFiveBlocks(5);
+
+		//Schedule CheckPoint Block
+		//-1 if no checkpoint is to be done.
+		int checkpointBlockNum = -1;
+
+        //Delay block-transmittance by 14 minutes flag (51% false flag prevention)
+        bool defenseDelayActive = false;
+        time_t defenseStartTime;
+
+		*/
+		
+        //Forbid any one IP address from transmitting 6 blocks in less than 10 minutes time
+		//==>IF the last block's time stamp is within 2 minutes of local time.
+		//This will prevent most fifty-one percent style attacks
+		//It will also bar any peer from having
+		//a majority of network hash power(softly-for any extended period) -- akumaburn (GoldCoin Lead Dev -Sept 2013)
+		//http://gldcoin.com
+		if(lastFiveBlocks.size() < 5) {
+            //Add this block's information to the last five blocks
+            blockInfo newBlock = {pblock->GetBlockTime(),pfrom?pfrom->addr.ToString():"local"};
+            lastFiveBlocks.push_back(newBlock);
+			//printf("====BLOCK's Recorded START====\n");
+			/*for(int x = 0; x < lastFiveBlocks.size(); x++) {
+                printf("Time:\n");
+                printf("%lld\n",lastFiveBlocks.at(x).timeStamp);
+                printf("Qtime:\n");
+                printf("%s\n", QDateTime::fromTime_t(lastFiveBlocks.at(x).timeStamp).toString().toStdString().c_str());
+                printf("IP:\n");
+                printf("%s\n",lastFiveBlocks.at(x).peerIp.c_str());
+			}*/
+			//printf("====BLOCK's Recorded END====\n");
+			//-- akumaburn (GoldCoin Lead Dev -Sept 2013)
+		} else {
+			/*printf("Stage 0 Entered\n");
+			printf("Our current time is:\n");
+			printf("QDateTime::currentDateTime()\n");
+            printf("The block time of the current block is: \n");
+            printf("%s\n",QDateTime::fromTime_t(pblock->GetBlockTime()).toString().toStdString().c_str());
+
+            if(pfrom) {
+                printf("The peer ip of the current block is: \n");
+                printf("%s\n",pfrom->addr.ToString().c_str());
+            }*/
+
+
+			/*printf("====BLOCK's Recorded INSTAGE START====\n");
+			for(int x = 0; x < lastFiveBlocks.size(); x++) {
+                printf("Time:\n");
+                printf("%lld\n",lastFiveBlocks.at(x).timeStamp);
+                printf("Qtime:\n");
+                printf("%s\n", QDateTime::fromTime_t(lastFiveBlocks.at(x).timeStamp).toString().toStdString().c_str());
+                printf("IP:\n");
+                printf("%s\n",lastFiveBlocks.at(x).peerIp.c_str());
+			}
+			printf("====BLOCK's Recorded INSTAGE END====\n");*/
+			
+			//We have 5 blocks
+            //First we check whether or not this peer is the same as the peer that transmitted the last five blocks
+            if(pfrom && lastFiveBlocks.at(0).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(1).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(2).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(3).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(4).peerIp.compare(pfrom->addr.ToString()) == 0) {
+			//printf("Stage 1 Entered\n");
+			//-- akumaburn (GoldCoin Lead Dev -Sept 2013)
+				if(!lastFiveBlocks.at(0).peerIp.compare("local") == 0) {//Make sure not to detect our own blocks..
+				
+					//If so then we go on to check the block's time stamp
+					//First we check whether it is within 10 minutes of the first block in our array
+					if(QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*10)) {
+						//printf("Stage 2 Entered\n");
+						
+						//Now we check whether the first block we recorded was within 10 minutes of our time
+						//Or if we are past block 100K and it should work anyhow...
+						if((QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::currentDateTime()) < (60*10)) || nBestHeight > 100000) {
+							//printf("Stage 3 Entered\n");
+							
+							//If so then we check if the current block is within 2 minutes of our time
+							//We don't want to ban peers for transmitting old blocks that were accepted prior to this change!
+							if((QDateTime::fromTime_t(pblock->GetBlockTime()).secsTo(QDateTime::currentDateTime()) <= (60*2)) || nBestHeight > 100000)
+							{
+								//printf("Stage 4 Entered\n");
+								//We must delay the transmittance of the next block(good or bad) for 14 minutes, 
+								//in order to not get banned ourselves! (there is a small probability we will also mine/receive a block whilst
+								//the 51% attack is going on that is not from the 51%er)
+								//Delay block-transmittance by 14 minutes flag (51% defence)
+								defenseDelayActive = true;
+								time(&defenseStartTime);
+							
+								//Now we schedule a checkpoint 5 blocks from now!
+								checkpointBlockNum = nBestHeight + 5;
+								
+								//If so then we ban them locally for 4 hours
+								if (pfrom)
+								pfrom->Misbehaving(50);
+								return error("ProcessBlock() : 51% attempt detected and TERMINATED O_O\n");
+								
+							} else {
+								//Otherwise we simply ignore this event
+							}
+						}
+					}
+				}
+			}
+			//We want to clear the vector to allow for the next five blocks to be checked
+			lastFiveBlocks.clear();
+		}
+	
     if (pcheckpoint && pblock->hashPrevBlock != hashBestChain)
     {
         // Extra checks to prevent "fill up memory by spamming with bogus blocks"
@@ -1973,6 +2111,8 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
                 pfrom->Misbehaving(100);
             return error("ProcessBlock() : block with timestamp before last checkpoint");
         }
+		
+		
         CBigNum bnNewBlock;
         bnNewBlock.SetCompact(pblock->nBits);
         CBigNum bnRequired;
@@ -2880,35 +3020,72 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
 
     else if (strCommand == "getblocks")
     {
-        CBlockLocator locator;
-        uint256 hashStop;
-        vRecv >> locator >> hashStop;
+		if(!defenseDelayActive) {
+			CBlockLocator locator;
+			uint256 hashStop;
+			vRecv >> locator >> hashStop;
 
-        // Find the last block the caller has in the main chain
-        CBlockIndex* pindex = locator.GetBlockIndex();
+			// Find the last block the caller has in the main chain
+			CBlockIndex* pindex = locator.GetBlockIndex();
 
-        // Send the rest of the chain
-        if (pindex)
-            pindex = pindex->pnext;
-        int nLimit = 500;
-        printf("getblocks %d to %s limit %d\n", (pindex ? pindex->nHeight : -1), hashStop.ToString().substr(0,20).c_str(), nLimit);
-        for (; pindex; pindex = pindex->pnext)
-        {
-            if (pindex->GetBlockHash() == hashStop)
-            {
-                printf("  getblocks stopping at %d %s\n", pindex->nHeight, pindex->GetBlockHash().ToString().substr(0,20).c_str());
-                break;
+			// Send the rest of the chain
+			if (pindex)
+				pindex = pindex->pnext;
+			int nLimit = 500;
+			printf("getblocks %d to %s limit %d\n", (pindex ? pindex->nHeight : -1), hashStop.ToString().substr(0,20).c_str(), nLimit);
+			for (; pindex; pindex = pindex->pnext)
+			{
+				if (pindex->GetBlockHash() == hashStop)
+				{
+					printf("  getblocks stopping at %d %s\n", pindex->nHeight, pindex->GetBlockHash().ToString().substr(0,20).c_str());
+					break;
+				}
+				pfrom->PushInventory(CInv(MSG_BLOCK, pindex->GetBlockHash()));
+				if (--nLimit <= 0)
+				{
+					// When this block is requested, we'll send an inv that'll make them
+					// getblocks the next batch of inventory.
+					printf("  getblocks stopping at limit %d %s\n", pindex->nHeight, pindex->GetBlockHash().ToString().substr(0,20).c_str());
+					pfrom->hashContinue = pindex->GetBlockHash();
+					break;
+				}
+			}
+		} else {
+            time_t now;
+            time(&now);
+            if(difftime(now,defenseStartTime) > 840) {//If 14 minutes has passed
+					CBlockLocator locator;
+					uint256 hashStop;
+					vRecv >> locator >> hashStop;
+
+					// Find the last block the caller has in the main chain
+					CBlockIndex* pindex = locator.GetBlockIndex();
+
+					// Send the rest of the chain
+					if (pindex)
+						pindex = pindex->pnext;
+					int nLimit = 500;
+					printf("getblocks %d to %s limit %d\n", (pindex ? pindex->nHeight : -1), hashStop.ToString().substr(0,20).c_str(), nLimit);
+					for (; pindex; pindex = pindex->pnext)
+					{
+						if (pindex->GetBlockHash() == hashStop)
+						{
+							printf("  getblocks stopping at %d %s\n", pindex->nHeight, pindex->GetBlockHash().ToString().substr(0,20).c_str());
+							break;
+						}
+						pfrom->PushInventory(CInv(MSG_BLOCK, pindex->GetBlockHash()));
+						if (--nLimit <= 0)
+						{
+							// When this block is requested, we'll send an inv that'll make them
+							// getblocks the next batch of inventory.
+							printf("  getblocks stopping at limit %d %s\n", pindex->nHeight, pindex->GetBlockHash().ToString().substr(0,20).c_str());
+							pfrom->hashContinue = pindex->GetBlockHash();
+							break;
+						}
+					}
+					defenseDelayActive = false;
             }
-            pfrom->PushInventory(CInv(MSG_BLOCK, pindex->GetBlockHash()));
-            if (--nLimit <= 0)
-            {
-                // When this block is requested, we'll send an inv that'll make them
-                // getblocks the next batch of inventory.
-                printf("  getblocks stopping at limit %d %s\n", pindex->nHeight, pindex->GetBlockHash().ToString().substr(0,20).c_str());
-                pfrom->hashContinue = pindex->GetBlockHash();
-                break;
-            }
-        }
+		}
     }
 
 

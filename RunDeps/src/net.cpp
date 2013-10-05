@@ -607,7 +607,18 @@ bool CNode::Misbehaving(int howmuch)
         CloseSocketDisconnect();
         printf("Disconnected %s for misbehavior (score=%d)\n", addrName.c_str(), nMisbehavior);
         return true;
-    }
+    } else if (nMisbehavior >= GetArg("-banscore", 50))
+	{
+		int64 banTime = GetTime()+GetArg("-bantime", 60*60*4);  // Default 4 hour ban
+        {
+            LOCK(cs_setBanned);
+            if (setBanned[addr] < banTime)
+                setBanned[addr] = banTime;
+        }
+        CloseSocketDisconnect();
+        printf("Disconnected %s for misbehavior (score=%d)\n", addrName.c_str(), nMisbehavior);
+        return true;
+	}
     return false;
 }
 
