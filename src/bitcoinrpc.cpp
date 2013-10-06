@@ -435,7 +435,7 @@ Value GetNetworkHashPS(int lookup) {
     result = (int64)(sumHashXtimeDiff / timeDiff);
     printf("returning hashrate %f MH/s, lookup %d (time difference = %.1f)\n", result/1000000, lookup, timeDiff/60);
     delete [] sections;
-    return result; 
+    return (boost::int64_t)result; 
 	
 }
 
