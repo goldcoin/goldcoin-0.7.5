@@ -2088,7 +2088,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 								//If so then we ban them locally for 4 hours
 								if (pfrom)
 								pfrom->Misbehaving(50);
-								return error("ProcessBlock() : 51% attempt detected and TERMINATED O_O\n");
+								return error("\n ProcessBlock() : 51% attempt detected and TERMINATED O_O \n");
 								
 							} else {
 								//Otherwise we simply ignore this event
@@ -2099,6 +2099,16 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 			}
 			//We want to clear the vector to allow for the next five blocks to be checked
 			lastFiveBlocks.clear();
+		}
+		
+		//stop accepting blocks.. including our own, for two minutes
+		//to avoid a "ban-chain"
+		if(defenseDelayActive) {
+			time_t now;
+			time(&now);
+			if(difftime(now,defenseStartTime) < 120) {
+				return error("\n ProcessBlock() : 51% defence delay active. \n");
+			}
 		}
 	
     if (pcheckpoint && pblock->hashPrevBlock != hashBestChain)
