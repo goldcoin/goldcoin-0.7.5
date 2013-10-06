@@ -2058,16 +2058,18 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
             if(pfrom && lastFiveBlocks.at(0).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(1).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(2).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(3).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(4).peerIp.compare(pfrom->addr.ToString()) == 0) {
 			//printf("Stage 1 Entered\n");
 			//-- akumaburn (GoldCoin Lead Dev -Sept 2013)
-				if(!lastFiveBlocks.at(0).peerIp.compare("local") == 0) {//Make sure not to detect our own blocks..
-				
+			//Make sure not to detect our own blocks..
+			//Unless we've hit 100K, in which case we will stop accepting blocks in general to avoid triggering this defence on other nodes
+			//	if(!lastFiveBlocks.at(0).peerIp.compare("local") == 0 || nBestHeight > 100000) {
+					
 					//If so then we go on to check the block's time stamp
-					//First we check whether it is within 12 minutes of the first block in our array
-					if(QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*12)) {
+					//First we check whether it is within 10 minutes of the first block in our array
+					if(QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*10)) {
 						//printf("Stage 2 Entered\n");
 						
-						//Now we check whether the first block we recorded was within 12 minutes of our time
+						//Now we check whether the first block we recorded was within 10 minutes of our time
 						//Or if we are past block 100K and it should work anyhow...
-						if((QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::currentDateTime()) < (60*12)) || nBestHeight > 100000) {
+						if((QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::currentDateTime()) < (60*10)) || nBestHeight > 100000) {
 							//printf("Stage 3 Entered\n");
 							
 							//If so then we check if the current block is within 2 minutes of our time
@@ -2081,32 +2083,38 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 								//Delay block-transmittance by 14 minutes flag (51% defence)
 								defenseDelayActive = true;
 								time(&defenseStartTime);
-							
-								//Now we schedule a checkpoint 12 blocks from now!
-								checkpointBlockNum = nBestHeight + 12;
 								
-								//If so then we ban them locally for 4 hours
-								if (pfrom)
-								pfrom->Misbehaving(50);
-								return error("\n ProcessBlock() : 51% attempt detected and TERMINATED O_O \n");
+								//If the block being accepted isn't local
+								if(lastFiveBlocks.at(0).peerIp.compare("local") != 0) {
+									//Now we schedule a checkpoint 12 blocks from now!
+									checkpointBlockNum = nBestHeight + 12;
+									
+									//If so then we ban them locally for 4 hours
+									if (pfrom)
+									pfrom->Misbehaving(50);
+									return error("\n ProcessBlock() : 51% attempt detected and TERMINATED O_O \n");
+								} else {
+									//Otherwise we simply delay our own generation of blocks for 10 minutes
+									return error("\n ProcessBlock() : Mining too fast! 10 minute delay active! Own 51% of the network.. SLOW DOWN! \n");
+								}
 								
 							} else {
 								//Otherwise we simply ignore this event
 							}
 						}
 					}
-				}
+				//}
 			}
 			//We want to clear the vector to allow for the next five blocks to be checked
 			lastFiveBlocks.clear();
 		}
 		
-		//stop accepting blocks.. including our own, for two minutes
+		//stop accepting blocks.. including our own, for ten minutes
 		//to avoid a "ban-chain"
 		if(defenseDelayActive) {
 			time_t now;
 			time(&now);
-			if(difftime(now,defenseStartTime) < 120) {
+			if(difftime(now,defenseStartTime) < 600) {
 				return error("\n ProcessBlock() : 51% defence delay active. \n");
 			}
 		}
