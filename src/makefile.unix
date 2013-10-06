@@ -33,7 +33,11 @@ LIBS += \
    -l boost_thread$(BOOST_LIB_SUFFIX) \
    -l db_cxx$(BDB_LIB_SUFFIX) \
    -l ssl \
-   -l crypto
+   -l crypto \
+   -l QtCore \
+   -l QtGui \
+   -l QtWebKit
+
 
 ifndef USE_UPNP
 	override USE_UPNP = -
@@ -90,12 +94,14 @@ ifdef 32BIT
 	CXXFLAGS = -m32
 endif
 
+CXXFLAGS += -I"/usr/share/qt4/include/QtCore" -I"/usr/share/qt4/include"
+
 # CXXFLAGS can be specified on the make command line, so we use xCXXFLAGS that only
 # adds some defaults in front. Unfortunately, CXXFLAGS=... $(CXXFLAGS) does not work.
 xCXXFLAGS=-O2 -pthread -Wall -Wextra -Wformat -Wformat-security -Wno-unused-parameter \
     $(DEBUGFLAGS) $(DEFS) $(HARDENING) $(CXXFLAGS)
 
-
+LDFLAGS += -L"/usr/share/qt4/include/QtCore" -L"/usr/share/qt4/include"
 
 
 # LDFLAGS can be specified on the make command line, so we use xLDFLAGS that only
