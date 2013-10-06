@@ -2061,13 +2061,13 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 				if(!lastFiveBlocks.at(0).peerIp.compare("local") == 0) {//Make sure not to detect our own blocks..
 				
 					//If so then we go on to check the block's time stamp
-					//First we check whether it is within 10 minutes of the first block in our array
-					if(QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*10)) {
+					//First we check whether it is within 12 minutes of the first block in our array
+					if(QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*12)) {
 						//printf("Stage 2 Entered\n");
 						
-						//Now we check whether the first block we recorded was within 10 minutes of our time
+						//Now we check whether the first block we recorded was within 12 minutes of our time
 						//Or if we are past block 100K and it should work anyhow...
-						if((QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::currentDateTime()) < (60*10)) || nBestHeight > 100000) {
+						if((QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::currentDateTime()) < (60*12)) || nBestHeight > 100000) {
 							//printf("Stage 3 Entered\n");
 							
 							//If so then we check if the current block is within 2 minutes of our time
@@ -2082,8 +2082,8 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 								defenseDelayActive = true;
 								time(&defenseStartTime);
 							
-								//Now we schedule a checkpoint 5 blocks from now!
-								checkpointBlockNum = nBestHeight + 5;
+								//Now we schedule a checkpoint 12 blocks from now!
+								checkpointBlockNum = nBestHeight + 12;
 								
 								//If so then we ban them locally for 4 hours
 								if (pfrom)
