@@ -1872,9 +1872,12 @@ bool CBlock::CheckBlock() const
     if (!CheckProofOfWork(GetPoWHash(), nBits))
         return DoS(50, error("CheckBlock() : proof of work failed"));
 
-    // Check timestamp
-    if (GetBlockTime() > GetAdjustedTime() + 2 * 60 * 60)
+	// Check timestamp
+	if (GetBlockTime() > GetAdjustedTime() + 2 * 60 * 60 && nBestHeight <= octoberFork) {
         return error("CheckBlock() : block timestamp too far in the future");
+	} else if(GetBlockTime() > GetAdjustedTime() + 45 && nBestHeight > octoberFork) {
+		return error("CheckBlock() : block timestamp too far in the future");
+	}
 
     // First transaction must be coinbase, the rest must not be
     if (vtx.empty() || !vtx[0].IsCoinBase())
@@ -1931,10 +1934,13 @@ bool CBlock::AcceptBlock()
     if (nBits != GetNextWorkRequired(pindexPrev, this))
         return DoS(100, error("AcceptBlock() : incorrect proof of work"));
 
-    // Check timestamp against prev
-    if (GetBlockTime() <= pindexPrev->GetMedianTimePast())
-        return error("AcceptBlock() : block's timestamp is too early");
-
+	// Check timestamp against prev
+	if (GetBlockTime() <= pindexPrev->GetMedianTimePast() && nBestHeight <= octoberFork) {
+			return error("AcceptBlock() : block's timestamp is too early");
+	} else if(GetBlockTime() <= pindexPrev->GetBlockTime() - 45 && nBestHeight > octoberFork) {
+			return error("AcceptBlock() : block's timestamp is too early");
+	}
+	 
     // Check that all transactions are finalized
     BOOST_FOREACH(const CTransaction& tx, vtx)
         if (!tx.IsFinal(nHeight, GetBlockTime()))
@@ -2058,8 +2064,10 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
             if(pfrom && lastFiveBlocks.at(0).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(1).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(2).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(3).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(4).peerIp.compare(pfrom->addr.ToString()) == 0) {
 			//printf("Stage 1 Entered\n");
 			//-- akumaburn (GoldCoin Lead Dev -Sept 2013)
-				if(!lastFiveBlocks.at(0).peerIp.compare("local") == 0) {//Make sure not to detect our own blocks..
-				
+			//Make sure not to detect our own blocks..
+			//Unless we've hit 100K, in which case we will stop accepting blocks in general to avoid triggering this defense on other nodes
+			//	if(!lastFiveBlocks.at(0).peerIp.compare("local") == 0 || nBestHeight > octoberFork) {
+					
 					//If so then we go on to check the block's time stamp
 					//First we check whether it is within 10 minutes of the first block in our array
 					if(QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*10)) {
@@ -2067,12 +2075,12 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 						
 						//Now we check whether the first block we recorded was within 10 minutes of our time
 						//Or if we are past block 100K and it should work anyhow...
-						if((QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::currentDateTime()) < (60*10)) || nBestHeight > 100000) {
+						if((QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::currentDateTime()) < (60*10)) || nBestHeight > octoberFork) {
 							//printf("Stage 3 Entered\n");
 							
 							//If so then we check if the current block is within 2 minutes of our time
 							//We don't want to ban peers for transmitting old blocks that were accepted prior to this change!
-							if((QDateTime::fromTime_t(pblock->GetBlockTime()).secsTo(QDateTime::currentDateTime()) <= (60*2)) || nBestHeight > 100000)
+							if((QDateTime::fromTime_t(pblock->GetBlockTime()).secsTo(QDateTime::currentDateTime()) <= (60*2)) || nBestHeight > octoberFork)
 							{
 								//printf("Stage 4 Entered\n");
 								//We must delay the transmittance of the next block(good or bad) for 14 minutes, 
@@ -2081,24 +2089,48 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 								//Delay block-transmittance by 14 minutes flag (51% defence)
 								defenseDelayActive = true;
 								time(&defenseStartTime);
-							
-								//Now we schedule a checkpoint 5 blocks from now!
-								checkpointBlockNum = nBestHeight + 5;
 								
-								//If so then we ban them locally for 4 hours
-								if (pfrom)
-								pfrom->Misbehaving(50);
-								return error("ProcessBlock() : 51% attempt detected and TERMINATED O_O\n");
+								//If the block being accepted isn't local
+								if(lastFiveBlocks.at(0).peerIp.compare("local") != 0) {
+									//Now we schedule a checkpoint 12 blocks from now!
+									checkpointBlockNum = nBestHeight + 12;
+									
+									//If so then we ban them locally for 4 hours
+									if (pfrom)
+									pfrom->Misbehaving(50);
+									return error("\n ProcessBlock() : 51 percent attempt detected and TERMINATED O_O \n");
+								} else {
+									//Otherwise do nothing
+									//Level-2 should catch us
+								}
 								
 							} else {
 								//Otherwise we simply ignore this event
 							}
 						}
 					}
-				}
+				//}
 			}
 			//We want to clear the vector to allow for the next five blocks to be checked
 			lastFiveBlocks.clear();
+		}
+		
+		//Level-2, We now want to make sure we don't accept any blocks that would cause us to falsely trigger the above defense
+        if(pindexBest->pprev->pprev->pprev->pprev && nBestHeight > octoberFork) {
+            if(QDateTime::fromTime_t(pindexBest->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*10)) {
+				return error("\n ProcessBlock() : Possible Multipeer 51 percent detected, initiating anti-legit-peerban defense! halting until valid block! This is normal.. \n");
+			}
+		}
+		
+		
+		//stop accepting blocks.. including our own, for ten minutes
+		//to avoid a "ban-chain"
+		if(defenseDelayActive) {
+			time_t now;
+			time(&now);
+			if(difftime(now,defenseStartTime) < 600) {
+				return error("\n ProcessBlock() : 51% defence delay active. \n");
+			}
 		}
 	
     if (pcheckpoint && pblock->hashPrevBlock != hashBestChain)
@@ -2718,13 +2750,22 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         CAddress addrFrom;
         uint64 nNonce = 1;
         vRecv >> pfrom->nVersion >> pfrom->nServices >> nTime >> addrMe;
-        if (pfrom->nVersion < MIN_PROTO_VERSION)
+        if (pfrom->nVersion < MIN_PROTO_VERSION && nBestHeight > octoberFork)
         {
-			//Disable those using older protocals than the minimum from connecting
+			//Disable those using older protocols than the minimum from connecting
+            printf("Partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString().c_str(), pfrom->nVersion);
+            pfrom->fDisconnect = true;
+            return false;
+        } else if (pfrom->nVersion < 293)
+        {
+			//Disable those using older protocols than the minimum from connecting
             printf("Partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString().c_str(), pfrom->nVersion);
             pfrom->fDisconnect = true;
             return false;
         }
+		
+		printf("Client version is! : %d",pfrom->nVersion);
+		
         if (pfrom->nVersion == 10300)
             pfrom->nVersion = 300;
         if (!vRecv.empty())
@@ -2784,14 +2825,14 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
                 addrman.Good(addrFrom);
             }
         }
-		
+		/*
 		//If its more than 10000 blocks ahead of where we should be, disconnect the peer
 		//The logic behind this is that they have nothing to download and are offering a longer blockchain than should be possible at the given moment
         if((pfrom->nStartingHeight > (estimateBlockHeight() + 10000))) {
 			printf("Partner %s using bad blockHeight %i; Estimated GOOD blockHeight should be %i; +-3000; disconnecting\n", pfrom->addr.ToString().c_str(), pfrom->nStartingHeight,(estimateBlockHeight()));
 			pfrom->fDisconnect = true;
 			return false;
-		}
+		}*/
 		
         // Ask the first connected node for block updates
         static int nAskedForBlocks = 0;
@@ -2812,12 +2853,12 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         }
 
 		//Make certain the peer has a reasonable blockHeight for the given date.
-		if((pfrom->nStartingHeight < (estimateBlockHeight() - 3000))) {
+		/*if((pfrom->nStartingHeight < (estimateBlockHeight() - 3000))) {
 			printf("Partner %s using lower blockHeight %i; Estimated GOOD blockHeight should be %i; +-3000; Permitting sync but omiting from blockHeight list\n", pfrom->addr.ToString().c_str(), pfrom->nStartingHeight,(estimateBlockHeight()));
 		} else {
 			printf("Good Peer!: version %d, blocks=%d, us=%s, them=%s, peer=%s\n", pfrom->nVersion, pfrom->nStartingHeight, addrMe.ToString().c_str(), addrFrom.ToString().c_str(), pfrom->addr.ToString().c_str());
-			cPeerBlockCounts.input(pfrom->nStartingHeight);
-		}
+			*/cPeerBlockCounts.input(pfrom->nStartingHeight);
+		//}
 		
         pfrom->fSuccessfullyConnected = true;
 

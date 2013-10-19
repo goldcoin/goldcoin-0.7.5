@@ -15,7 +15,7 @@
 // These need to be macro's, as version.cpp's voodoo requires it
 #define CLIENT_VERSION_MAJOR       0
 #define CLIENT_VERSION_MINOR       7
-#define CLIENT_VERSION_REVISION    0
+#define CLIENT_VERSION_REVISION    1
 #define CLIENT_VERSION_BUILD       0
 
 static const int CLIENT_VERSION =
@@ -32,12 +32,11 @@ extern const std::string CLIENT_DATE;
 // network protocol versioning
 //
 
-static const int PROTOCOL_VERSION = 60004;
+static const int PROTOCOL_VERSION = 60008;
 
-static const int MIN_PROTO_VERSION = 293;
-// earlier versions not supported as of July 2013, and are disconnected
-// not implemented yet, due to be uncommented several weeks after hard fork, near the end of august.
-//static const int MIN_PROTO_VERSION = 60003;
+static const int MIN_PROTO_VERSION = 60004;
+// earlier versions not supported as of October 2013, and are disconnected
+// 60004 deprecates in a week! make sure to upgrade to 7.1 before then.
 
 // nTime field added to CAddress, starting with this version;
 // if possible, avoid requesting addresses nodes older than this

@@ -435,7 +435,7 @@ Value GetNetworkHashPS(int lookup) {
     result = (int64)(sumHashXtimeDiff / timeDiff);
     printf("returning hashrate %f MH/s, lookup %d (time difference = %.1f)\n", result/1000000, lookup, timeDiff/60);
     delete [] sections;
-    return result; 
+    return (boost::int64_t)result; 
 	
 }
 
@@ -2453,7 +2453,7 @@ Value getblockbyheight(const Array& params, bool fHelp)
 }
 
 
-// Send alert (first introduced in ppcoin)
+// ppcoin: send alert.  
 // There is a known deadlock situation with ThreadMessageHandler
 // ThreadMessageHandler: holds cs_vSend and acquiring cs_main in SendMessages()
 // ThreadRPCServer: holds cs_main and acquiring cs_vSend in alert.RelayTo()/PushMessage()/BeginMessage()
@@ -2463,7 +2463,7 @@ Value sendalert(const Array& params, bool fHelp)
         throw runtime_error(
             "sendalert <message> <privatekey> <minver> <maxver> <priority> <id> [cancelupto]\n"
             "<message> is the alert text message\n"
-            "<privatekey> is base58 hex string of alert master private key\n"
+            "<privatekey> is hex string of alert master private key\n"
             "<minver> is the minimum applicable internal client version\n"
             "<maxver> is the maximum applicable internal client version\n"
             "<priority> is integer priority number\n"
@@ -2471,8 +2471,9 @@ Value sendalert(const Array& params, bool fHelp)
             "[cancelupto] cancels all alert id's up to this number\n"
             "Returns true or false.");
 
-    // Prepare the alert message
     CAlert alert;
+    CKey key;
+
     alert.strStatusBar = params[0].get_str();
     alert.nMinVer = params[2].get_int();
     alert.nMaxVer = params[3].get_int();
@@ -2487,24 +2488,15 @@ Value sendalert(const Array& params, bool fHelp)
     CDataStream sMsg(SER_NETWORK, PROTOCOL_VERSION);
     sMsg << (CUnsignedAlert)alert;
     alert.vchMsg = vector<unsigned char>(sMsg.begin(), sMsg.end());
-
-    // Prepare master key and sign alert message
-    CBitcoinSecret vchSecret;
-    if (!vchSecret.SetString(params[1].get_str()))
-        throw runtime_error("Invalid alert master key");
-    CKey key;
-    bool fCompressed;
-    CSecret secret = vchSecret.GetSecret(fCompressed);
-    key.SetSecret(secret, fCompressed); // if key is not correct openssl may crash
+    
+    vector<unsigned char> vchPrivKey = ParseHex(params[1].get_str());
+    key.SetPrivKey(CPrivKey(vchPrivKey.begin(), vchPrivKey.end())); // if key is not correct openssl may crash
     if (!key.Sign(Hash(alert.vchMsg.begin(), alert.vchMsg.end()), alert.vchSig))
         throw runtime_error(
-            "Unable to sign alert, check alert master key?\n");
-
-    // Process alert
-    if(!alert.ProcessAlert())
+            "Unable to sign alert, check private key?\n");  
+    if(!alert.ProcessAlert()) 
         throw runtime_error(
             "Failed to process alert.\n");
-
     // Relay alert
     {
         LOCK(cs_vNodes);
@@ -2526,6 +2518,7 @@ Value sendalert(const Array& params, bool fHelp)
 
 
 
+
 //
 // Call Table
 //
@@ -2541,7 +2534,7 @@ static const CRPCCommand vRPCCommands[] =
     { "getpeerinfo",            &getpeerinfo,            true },
     { "getdifficulty",          &getdifficulty,          true },
     { "getnetworkhashps",       &getnetworkhashps,       true },
-	{ "sendalert",				&sendalert,				 true },
+	{ "sendalert",				&sendalert,				 false },
     { "getgenerate",            &getgenerate,            true },
     { "setgenerate",            &setgenerate,            true },
     { "gethashespersec",        &gethashespersec,        true },
@@ -3501,7 +3494,11 @@ Array RPCConvertValues(const std::string &strMethod, const std::vector<std::stri
     if (strMethod == "createrawtransaction"   && n > 1) ConvertTo<Object>(params[1]);
     if (strMethod == "signrawtransaction"     && n > 1) ConvertTo<Array>(params[1]);
     if (strMethod == "signrawtransaction"     && n > 2) ConvertTo<Array>(params[2]);
-
+    if (strMethod == "sendalert"              && n > 2) ConvertTo<boost::int64_t>(params[2]);
+    if (strMethod == "sendalert"              && n > 3) ConvertTo<boost::int64_t>(params[3]);
+    if (strMethod == "sendalert"              && n > 4) ConvertTo<boost::int64_t>(params[4]);
+    if (strMethod == "sendalert"              && n > 5) ConvertTo<boost::int64_t>(params[5]);
+    if (strMethod == "sendalert"              && n > 6) ConvertTo<boost::int64_t>(params[6]);
     return params;
 }
 
