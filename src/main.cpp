@@ -2086,9 +2086,8 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 								//the 51% attack is going on that is not from the 51%er)
 								//Delay block-transmittance by 14 minutes flag (51% defence)
 								
-								//Not needed since level-2!
-								//defenseDelayActive = true;
-								//time(&defenseStartTime);
+								defenseDelayActive = true;
+								time(&defenseStartTime);
 								
 								//If the block being accepted isn't local
 								if(lastFiveBlocks.at(0).peerIp.compare("local") != 0) {
@@ -2127,13 +2126,14 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 		
 		//stop accepting blocks.. including our own, for ten minutes
 		//to avoid a "ban-chain"
+		/* //Not needed since level-2!
 		if(defenseDelayActive) {
 			time_t now;
 			time(&now);
 			if(difftime(now,defenseStartTime) < 600) {
 				return error("\n ProcessBlock() : 51% defence delay active. \n");
 			}
-		}
+		}*/
 	
     if (pcheckpoint && pblock->hashPrevBlock != hashBestChain)
     {
