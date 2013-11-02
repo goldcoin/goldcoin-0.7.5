@@ -2085,8 +2085,10 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 								//in order to not get banned ourselves! (there is a small probability we will also mine/receive a block whilst
 								//the 51% attack is going on that is not from the 51%er)
 								//Delay block-transmittance by 14 minutes flag (51% defence)
-								defenseDelayActive = true;
-								time(&defenseStartTime);
+								
+								//Not needed since level-2!
+								//defenseDelayActive = true;
+								//time(&defenseStartTime);
 								
 								//If the block being accepted isn't local
 								if(lastFiveBlocks.at(0).peerIp.compare("local") != 0) {
