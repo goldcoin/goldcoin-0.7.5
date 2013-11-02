@@ -12,7 +12,7 @@ Block rewards in order:
  - (The values below are post-fork in development/dispute values)
  - The Block reward drops to 45 GLD
  - Reward for the years thereafter is 50 divided by (1.1 + 0.49*every year after fork)
- - Total Blocks: 26,325,000
+ - Total Reward Blocks: 26,325,000
  - Total Coins Produced: 123,423,900 (including 50 coin 0th block)
  - The default ports are 8121 (connect) and 8122 (fson rpc)
 
