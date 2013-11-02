@@ -71,6 +71,7 @@ struct blockInfo {
 };
 
 std::vector<blockInfo> lastFiveBlocks;
+std::vector<CBlock*> last1000ProcessedBlocks;
 
 //Schedule CheckPoint Block
 //-1 if no checkpoint is to be done.
@@ -1950,6 +1951,18 @@ bool CBlock::AcceptBlock()
     if (!Checkpoints::CheckBlock(nHeight, hash))
         return DoS(100, error("AcceptBlock() : rejected by checkpoint lockin at %d", nHeight));
 
+    //Ensure this block's past 5 blocks pass the 51% defense requirements
+    if(pindexPrev)
+        if(pindexPrev->pprev)
+            if(pindexPrev->pprev->pprev)
+                if(pindexPrev->pprev->pprev->pprev)
+                    if(pindexPrev->pprev->pprev->pprev->pprev && nBestHeight > octoberFork) {
+						printf("Entered Check");
+                        if(QDateTime::fromTime_t(pindexPrev->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60*10) && hashPrevBlock == pindexPrev->GetBlockHash()) {
+                            return error("\n AcceptBlock() : Possible Multipeer 51 percent detected, Denying chain switch.. \n");
+                        }
+                    }
+
     // Write block to history file
     if (!CheckDiskSpace(::GetSerializeSize(*this, SER_DISK, CLIENT_VERSION)))
         return error("AcceptBlock() : out of disk space");
@@ -1970,11 +1983,11 @@ bool CBlock::AcceptBlock()
                 pnode->PushInventory(CInv(MSG_BLOCK, hash));
     }
 
-	//Checkpoint this block in memory, if it is a checkpoint block
-	if(checkpointBlockNum == nHeight && checkpointBlockNum != -1) {
-		Checkpoints::addCheckpoint(nHeight,hash);
-		checkpointBlockNum = -1;
-	}
+    //Checkpoint this block in memory, if it is a checkpoint block
+    if(checkpointBlockNum == nHeight && checkpointBlockNum != -1) {
+        Checkpoints::addCheckpoint(nHeight,hash);
+        checkpointBlockNum = -1;
+    }
     return true;
 }
 
@@ -2114,13 +2127,85 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 			lastFiveBlocks.clear();
 		}
 		//Level-2, We now want to make sure we don't accept any blocks that would cause us to falsely trigger the above defense
+		//Assuming those blocks are greater than our current nheight!
+		//Otherwise they may be legit blocks of a different chain...
         if(pindexBest)
             if(pindexBest->pprev)
                 if(pindexBest->pprev->pprev)
                     if(pindexBest->pprev->pprev->pprev)
                         if(pindexBest->pprev->pprev->pprev->pprev && nBestHeight > octoberFork) {
-                            if(QDateTime::fromTime_t(pindexBest->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*10)) {
+                            if(QDateTime::fromTime_t(pindexBest->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*10) && pblock->hashPrevBlock == pindexBest->GetBlockHash()) {
                                 return error("\n ProcessBlock() : Possible Multipeer 51 percent detected, initiating anti-legit-peerban defense! halting until valid block! This is normal.. \n");
+                            } else if(pblock->hashPrevBlock != pindexBest->GetBlockHash() && QDateTime::fromTime_t(pindexBest->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*10)) {//Block sent that is trying to switch chains and is in the past
+                                //Find the block that we have that is right before this one
+                                //Search at most 1000 blocks into the past...
+								//Also search blocks we are currently holding..
+								//The entire purpose of this is to determine whether or not this block triggers the defense
+								//If it does not we couldn't care less how deep it is..
+                                //Any longer than 1000 deep though and a complete rebuild of blockchain makes more sense for the user..
+								CBlockIndex* ptemp = pindexBest;
+								//First we sort through our last 1000 processed blocks to see if we can find a match
+								
+								//Create a reference to a block
+								CBlock* ablock = pblock;
+                                //Create a reference to a block
+                                CBlock* tblock = pblock;
+
+                                //Creates a temp hash to hold
+                                uint256 checkHash = ablock->hashPrevBlock;
+                                //Prevhash
+                                uint256 prevHash = ptemp->GetBlockHash();
+
+                                bool checked = false;
+								
+								
+								std::map<uint256, CBlock*>::iterator it = mapOrphanBlocks.begin();
+                                while(it != mapOrphanBlocks.end()) {
+									//If we find a match, set that match to our new search..
+                                    //And begin the process over again except with a direct comparison to our processed blocks
+
+                                    if(ablock->GetHash() == checkHash) {
+                                        checkHash = ablock->hashPrevBlock;
+                                        it = mapOrphanBlocks.begin();
+                                        tblock = ablock;
+                                    }
+                                    else if(prevHash == checkHash && !checked) {
+                                        checkHash = ptemp->pprev->GetBlockHash();
+                                        checked = true;
+                                    }
+									
+                                    ablock = it->second;
+									it++;
+								}
+
+                                //Set our variable back to the deepest match we could find
+                                ablock = tblock;
+								
+								//Now either we found a match in which case we have the earliest known block in the series(that this client is aware of)..
+								//In which case we have to check the block chain
+								//Or we found nothing in which case we have to check the block chain... Lucky us..
+								
+								//We also want to check for any matches for a previous block of the match we found (if found)
+								ptemp = pindexBest;
+                                
+                                int count = 0;
+                                if(ptemp) {
+                                    while(ptemp->GetBlockHash() != ablock->hashPrevBlock && count < 1000) {
+                                        ptemp = ptemp->pprev;
+                                        count++;
+                                    }
+                                    if(count >= 1000) {//This is now handled in accept block..
+                                       //return error("\n ProcessBlock() : Really old chain OR no matching pprev block found in current chain ! \n");
+                                    } else {
+                                        if(ptemp->pprev)
+                                            if(ptemp->pprev->pprev)
+                                                 if(ptemp->pprev->pprev->pprev)
+                                                      if(ptemp->pprev->pprev->pprev->pprev && nBestHeight > octoberFork)
+                                                           if(QDateTime::fromTime_t(ptemp->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(ablock->GetBlockTime())) < (60*10) && ablock->hashPrevBlock == ptemp->GetBlockHash()) {
+                                                                return error("\n ProcessBlock() : Chain found that does not meet 51 percent requirements. \n");
+                                                            }
+                                    }
+                               }
                             }
                         }
 		
@@ -2196,7 +2281,12 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
         }
         mapOrphanBlocksByPrev.erase(hashPrev);
     }
-
+/*
+	last1000ProcessedBlocks.push_back(pblock);
+	if(last1000ProcessedBlocks.size() > 1000) {
+		//Pop off the oldest entry
+		last1000ProcessedBlocks.erase(last1000ProcessedBlocks.begin());		
+	}*/
     printf("ProcessBlock: ACCEPTED\n");
     return true;
 }
