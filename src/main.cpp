@@ -2072,7 +2072,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 			
 			//We have 5 blocks
             //First we check whether or not this peer is the same as the peer that transmitted the last five blocks
-            if(pfrom && lastFiveBlocks.at(0).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(1).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(2).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(3).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(4).peerIp.compare(pfrom->addr.ToString()) == 0) {
+            if(pfrom && lastFiveBlocks.at(0).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(1).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(2).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(3).peerIp.compare(pfrom->addr.ToString()) == 0 && lastFiveBlocks.at(4).peerIp.compare(pfrom->addr.ToString()) == 0 && pblock->hashPrevBlock == pindexBest->GetBlockHash()) {
 			//printf("Stage 1 Entered\n");
 			//-- akumaburn (GoldCoin Lead Dev -Sept 2013)
 			//Make sure not to detect our own blocks..
@@ -2231,6 +2231,9 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
             return error("ProcessBlock() : block with timestamp before last checkpoint");
         }
 		
+		/*
+		This may work for bitcoin but not for us.. we'll have to find a different way around memory overflows...
+		Perhaps with a little garbage collection? O_o
 		
         CBigNum bnNewBlock;
         bnNewBlock.SetCompact(pblock->nBits);
@@ -2241,9 +2244,9 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
             if (pfrom)
                 pfrom->Misbehaving(100);
             return error("ProcessBlock() : block with too little proof-of-work");
-        }
+        }*/
+		
     }
-
 
     // If don't already have its previous block, shunt it off to holding area until we get it
     if (!mapBlockIndex.count(pblock->hashPrevBlock))
@@ -2287,6 +2290,18 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 		//Pop off the oldest entry
 		last1000ProcessedBlocks.erase(last1000ProcessedBlocks.begin());		
 	}*/
+	
+	//Do a little garbage collection on the orphans
+	if(mapOrphanBlocks.size() > 11000) {
+		std::map<uint256, CBlock*>::iterator it2 = mapOrphanBlocks.begin();
+        std::map<uint256, CBlock*>::iterator it3 = mapOrphanBlocks.begin();
+        int counter2 = 0;
+        while(counter2 < 1000) {//Todo find a better way to do this
+            it3++;
+            counter2++;
+        }
+        mapOrphanBlocks.erase(it2,it3);
+	}
     printf("ProcessBlock: ACCEPTED\n");
     return true;
 }
