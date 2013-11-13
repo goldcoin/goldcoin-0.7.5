@@ -18,6 +18,13 @@
 #include <time.h>
 #include <stdlib.h>
 
+#ifdef linux
+#include <unistd.h>
+#define Sleep(x) usleep((x)*1000)
+#elif _WIN32
+#include <windows.h>
+#endif
+
 using namespace std;
 using namespace boost;
 
@@ -1264,9 +1271,26 @@ void static InvalidChainFound(CBlockIndex* pindexNew)
 
 }
 
+int64 getNextMinTime(const CBlockIndex* pindexPrev) {
+    int64 minTime = pindexPrev->GetBlockTime();
+        if(pindexPrev)
+            if(pindexPrev->pprev)
+                 if(pindexPrev->pprev->pprev)
+                    if(pindexPrev->pprev->pprev->pprev)
+                        if(pindexPrev->pprev->pprev->pprev->pprev && nBestHeight > octoberFork) {
+                            if(QDateTime::fromTime_t(pindexPrev->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(minTime)) < (60*10)) {
+                                //This minTime triggers the defense, so we need to find set the mintime such that the defense is not triggered
+                                minTime += (60*10) - QDateTime::fromTime_t(pindexPrev->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(minTime));
+                                //Adding the difference between the current timespan and the needed timespan to minTime should get us the exact time needed that won't trigger the 51% defense
+                                //return error("\n ProcessBlock() : Possible Multipeer 51 percent detected, initiating anti-legit-peerban defense! halting until valid block! This is normal.. \n");
+                            }
+                        }
+    return minTime;
+}
+
 void CBlock::UpdateTime(const CBlockIndex* pindexPrev)
 {
-    nTime = max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
+    nTime = max(getNextMinTime(pindexPrev), GetAdjustedTime());
 
     // Updating time can change work required on testnet:
     if (fTestNet)
@@ -2036,6 +2060,100 @@ bool CBlock::CheckBlock() const
     return true;
 }
 
+bool CBlock::CheckBlock(CNode* pfrom) const
+{
+    // These are checks that are independent of context
+    // that can be verified before saving an orphan block.
+
+    // Size limits
+    if (vtx.empty() || vtx.size() > MAX_BLOCK_SIZE || ::GetSerializeSize(*this, SER_NETWORK, PROTOCOL_VERSION) > MAX_BLOCK_SIZE)
+        return DoS(100, error("CheckBlock() : size limits failed"));
+
+    // Check proof of work matches claimed amount
+    if (!CheckProofOfWork(GetPoWHash(), nBits))
+        return DoS(50, error("CheckBlock() : proof of work failed"));
+
+	// Check timestamp
+	if (GetBlockTime() > GetAdjustedTime() + 2 * 60 * 60 && nBestHeight <= octoberFork) {
+        return error("CheckBlock() : block timestamp too far in the future");
+	} else if(GetBlockTime() > GetAdjustedTime() + 45 && nBestHeight > octoberFork) {
+		//If the block was found locally then we want to queue it such that it will be processed and sent to other
+		//nodes once it's timestamp is able to be valid
+		//If this happens it means you've found the next block and are waiting to transmit (do not panic this is a good thing)
+		//If your block is accepted or rejected its status will be returned once processblock has finished doing its thing
+        if(!pfrom) {//If pfrom is not set then we know we have a local block
+			//First we check if its a valid block
+			if(pindexBest)
+				if(pindexBest->pprev)
+					if(pindexBest->pprev->pprev)
+						if(pindexBest->pprev->pprev->pprev)
+							if(pindexBest->pprev->pprev->pprev->pprev && nBestHeight > octoberFork) {
+								if(QDateTime::fromTime_t(pindexBest->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60*10) && hashPrevBlock == pindexBest->GetBlockHash()) {
+									//The block is too far into the future but still not far enough to pass the 51% defense
+									//Thus it is useless and will be rejected
+									return error("CheckBlock() : block timestamp too far in the future");
+								} else if(QDateTime::fromTime_t(pindexBest->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60*10 + 45) && hashPrevBlock == pindexBest->GetBlockHash()) {
+									//A valid block has been found but the current network adjusted time will not permit it to be accepted by other peers
+									//Thus we hold the block until GetAdjustedTime() is such that if(GetBlockTime() > GetAdjustedTime() + 45) is false
+									printf("Local has found possible valid block... queueing until timestamp is valid \n");
+									//Since we know that GetBlockTime() is greater than GetAdjustedTime()
+									//We sleep the difference
+									//Doesn't hurt to check twice
+                                    if(GetBlockTime() > GetAdjustedTime() + 45)
+                                    Sleep(1000*(GetBlockTime()-(GetAdjustedTime() + 45)));
+									/*while(GetBlockTime() > GetAdjustedTime() + 45) {
+									//We wait here..
+									}*/
+								} else {
+									//The block is too far into the future even when considering the defense
+									//Thus it will be rejected
+									return error("CheckBlock() : block timestamp too far in the future");
+								}
+                            } else {
+                                return error("CheckBlock() : block timestamp too far in the future");
+                            }
+		} else {
+			return error("CheckBlock() : block timestamp too far in the future");
+		}
+	}
+
+    // First transaction must be coinbase, the rest must not be
+    if (vtx.empty() || !vtx[0].IsCoinBase())
+        return DoS(100, error("CheckBlock() : first tx is not coinbase"));
+    for (unsigned int i = 1; i < vtx.size(); i++)
+        if (vtx[i].IsCoinBase())
+            return DoS(100, error("CheckBlock() : more than one coinbase"));
+
+    // Check transactions
+    BOOST_FOREACH(const CTransaction& tx, vtx)
+        if (!tx.CheckTransaction())
+            return DoS(tx.nDoS, error("CheckBlock() : CheckTransaction failed"));
+
+    // Check for duplicate txids. This is caught by ConnectInputs(),
+    // but catching it earlier avoids a potential DoS attack:
+    set<uint256> uniqueTx;
+    BOOST_FOREACH(const CTransaction& tx, vtx)
+    {
+        uniqueTx.insert(tx.GetHash());
+    }
+    if (uniqueTx.size() != vtx.size())
+        return DoS(100, error("CheckBlock() : duplicate transaction"));
+
+    unsigned int nSigOps = 0;
+    BOOST_FOREACH(const CTransaction& tx, vtx)
+    {
+        nSigOps += tx.GetLegacySigOpCount();
+    }
+    if (nSigOps > MAX_BLOCK_SIGOPS)
+        return DoS(100, error("CheckBlock() : out-of-bounds SigOpCount"));
+
+    // Check merkleroot
+    if (hashMerkleRoot != BuildMerkleTree())
+        return DoS(100, error("CheckBlock() : hashMerkleRoot mismatch"));
+
+    return true;
+}
+
 bool CBlock::AcceptBlock()
 {
     // Check for duplicate
@@ -2120,7 +2238,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
         return error("ProcessBlock() : already have block (orphan) %s", hash.ToString().substr(0,20).c_str());
 
     // Preliminary checks
-    if (!pblock->CheckBlock())
+    if (!pblock->CheckBlock(pfrom))
         return error("ProcessBlock() : CheckBlock FAILED");
 		
     CBlockIndex* pcheckpoint = Checkpoints::GetLastCheckpoint(mapBlockIndex);

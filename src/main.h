@@ -110,6 +110,7 @@ int GetNumBlocksOfPeers();
 bool IsInitialBlockDownload();
 std::string GetWarnings(std::string strFor);
 bool GetTransaction(const uint256 &hash, CTransaction &tx, uint256 &hashBlock);
+int64 getNextMinTime(const CBlockIndex* pindexPrev);
 
 
 
@@ -1037,6 +1038,7 @@ public:
     bool SetBestChain(CTxDB& txdb, CBlockIndex* pindexNew);
     bool AddToBlockIndex(unsigned int nFile, unsigned int nBlockPos);
     bool CheckBlock() const;
+	bool CheckBlock(CNode* pfrom) const;
     bool AcceptBlock();
 
 private:
