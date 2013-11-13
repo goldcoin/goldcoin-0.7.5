@@ -15,6 +15,7 @@
 #include "base58.h"
 #include "bitcoinrpc.h"
 
+
 #undef printf
 #include <boost/asio.hpp>
 #include <boost/asio/ip/v6_only.hpp>
@@ -29,6 +30,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/shared_ptr.hpp>
 #include <list>
+#include <qdatetime.h>
 
 #define printf OutputDebugStringF
 
@@ -2019,7 +2021,7 @@ Value getworkex(const Array& params, bool fHelp)
         }
 
         // Update nTime
-        pblock->nTime = max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
+        pblock->UpdateTime(pindexPrev);
         pblock->nNonce = 0;
 
         // Update nExtraNonce
@@ -2203,7 +2205,6 @@ Value getwork(const Array& params, bool fHelp)
     }
 }
 
-
 Value getblocktemplate(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
@@ -2337,7 +2338,10 @@ Value getblocktemplate(const Array& params, bool fHelp)
         result.push_back(Pair("coinbaseaux", aux));
         result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].vout[0].nValue));
         result.push_back(Pair("target", hashTarget.GetHex()));
-        result.push_back(Pair("mintime", (int64_t)pindexPrev->GetMedianTimePast()+1));
+		//We have to set mintime such that we don't bother working on a block that will just end up being rejected by the 51% defence anyhow
+		//Also we want to eliminate any advantage that solving a block with a faketimestamp set 45 seconds in the future may have
+		//To do this we will first call a function that will give us the next mintime taking the 51% defence into consideration..
+        result.push_back(Pair("mintime", (int64_t)getNextMinTime(pindexPrev)));
         result.push_back(Pair("mutable", aMutable));
         result.push_back(Pair("noncerange", "00000000ffffffff"));
         result.push_back(Pair("sigoplimit", (int64_t)MAX_BLOCK_SIGOPS));
