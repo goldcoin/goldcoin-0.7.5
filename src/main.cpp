@@ -18,13 +18,6 @@
 #include <time.h>
 #include <stdlib.h>
 
-#ifdef linux
-#include <unistd.h>
-#define Sleep(x) usleep((x)*1000)
-#elif _WIN32
-#include <windows.h>
-#endif
-
 using namespace std;
 using namespace boost;
 
@@ -73,6 +66,8 @@ int64 nMinimumInputValue = CENT / 100;
 
 bool hardForkedJuly = false;
 bool hardForkedNovember = false;
+
+bool dontWaitForBlockStamp = false;
 
 struct blockInfo {
 	int64 timeStamp;
@@ -1126,7 +1121,38 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
         sort(last59TimeDifferences.begin(), last59TimeDifferences.end(), comp64);
 
         printf("  Median Time between blocks is: %"PRI64d" \n",last59TimeDifferences[29]);
-        int64 nActualTimespan = llabs((last59TimeDifferences[29]))*60;
+        int64 nActualTimespan = llabs((last59TimeDifferences[29]));
+        int64 medTime = nActualTimespan;
+
+		//Fixes an issue where median time between blocks is greater than 120 seconds and is not permitted to be lower by the defence system
+		//Causing difficulty to drop without end
+
+        if(nHeight > novemberFork2) {
+            if((last59TimeDifferences[29]) >= 120) {
+                //Check to see whether we are in a deadlock situation with the 51% defense system
+
+                int numTooClose = 0;
+                int index = 1;
+                while(index != 61) {
+                    if(last60BlockTimes.at(last60BlockTimes.size()-index) - last60BlockTimes.at(last60BlockTimes.size()-(index+4)) == 600) {
+                        numTooClose++;
+                    }
+                    index++;
+                }
+
+                if(numTooClose > 0) {
+                    //We found 6 blocks that were solved in exactly 10 minutes
+                    //Averaging 1.66 minutes per block
+
+
+                    medTime = 110;
+                }
+
+
+            }
+        }
+		
+        nActualTimespan = medTime * 60;
 		
 		printf("  nActualTimespan = %"PRI64d"  before bounds\n", nActualTimespan);
 		int64 nActualTimespanMax = fNewDifficultyProtocol? ((nTargetTimespanCurrent*99)/70) : (nTargetTimespanCurrent*4);
@@ -2092,15 +2118,27 @@ bool CBlock::CheckBlock(CNode* pfrom) const
 									//The block is too far into the future but still not far enough to pass the 51% defense
 									//Thus it is useless and will be rejected
 									return error("CheckBlock() : block timestamp too far in the future");
-								} else if(QDateTime::fromTime_t(pindexBest->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60*10 + 45) && hashPrevBlock == pindexBest->GetBlockHash()) {
+								} else if(QDateTime::fromTime_t(pindexBest->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60*10 + 600) && hashPrevBlock == pindexBest->GetBlockHash() && !dontWaitForBlockStamp) {
 									//A valid block has been found but the current network adjusted time will not permit it to be accepted by other peers
 									//Thus we hold the block until GetAdjustedTime() is such that if(GetBlockTime() > GetAdjustedTime() + 45) is false
 									printf("Local has found possible valid block... queueing until timestamp is valid \n");
 									//Since we know that GetBlockTime() is greater than GetAdjustedTime()
 									//We sleep the difference
 									//Doesn't hurt to check twice
-                                    if(GetBlockTime() > GetAdjustedTime() + 45)
-                                    Sleep(1000*(GetBlockTime()-(GetAdjustedTime() + 45)));
+                                    if(GetBlockTime() > GetAdjustedTime() + 45) {
+										//Set a variable prior to sleeping warning other connectionhandler not to sleep as well.
+										dontWaitForBlockStamp = true;
+										Sleep(1000*(GetBlockTime()-(GetAdjustedTime() + 45)));
+									}
+									
+									dontWaitForBlockStamp = false;
+									//If for some reason we've held this block for too long and there is a longer chain, abort.
+									//This should get rid of the majority of orphan issues.
+                                    if(QDateTime::fromTime_t(pindexBest->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60*10) && hashPrevBlock == pindexBest->GetBlockHash())
+									{
+										return error("CheckBlock() : Longer chain found.");
+									}
+									
 									/*while(GetBlockTime() > GetAdjustedTime() + 45) {
 									//We wait here..
 									}*/

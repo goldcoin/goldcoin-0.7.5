@@ -36,6 +36,7 @@ static const int64 MIN_RELAY_TX_FEE = MIN_TX_FEE;
 static const int64 MAX_MONEY = 123423900 * COIN; // GoldCoin (GLD): maximum of 123,423,900 coins in a single wallet... this value does not dictate maximum number of coins on its own.
 const int64 julyFork = 45000;
 const int64 novemberFork = 103000;
+const int64 novemberFork2 = 117000;
 const int octoberFork = 100000;
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 static const int COINBASE_MATURITY = 100;
@@ -49,6 +50,7 @@ static const int fHaveUPnP = false;
 
 extern bool hardForkedJuly;
 extern bool hardForkedNovember;
+extern bool dontWaitForBlockStamp;
 
 extern CScript COINBASE_FLAGS;
 

@@ -1259,9 +1259,33 @@ void ThreadDumpAddress(void* parg)
 void ThreadOpenConnections(void* parg)
 {
     IMPLEMENT_RANDOMIZE_STACK(ThreadOpenConnections(parg));
-
+	
     // Make this thread recognisable as the connection opening thread
     RenameThread("bitcoin-opencon");
+
+    try
+    {
+        vnThreadsRunning[THREAD_OPENCONNECTIONS]++;
+        ThreadOpenConnections2(parg);
+        vnThreadsRunning[THREAD_OPENCONNECTIONS]--;
+    }
+    catch (std::exception& e) {
+        vnThreadsRunning[THREAD_OPENCONNECTIONS]--;
+        PrintException(&e, "ThreadOpenConnections()");
+    } catch (...) {
+        vnThreadsRunning[THREAD_OPENCONNECTIONS]--;
+        PrintException(NULL, "ThreadOpenConnections()");
+    }
+    printf("ThreadOpenConnections exited\n");
+}
+
+//A second thread to handle connections
+void ThreadOpenConnections3(void* parg)
+{
+    IMPLEMENT_RANDOMIZE_STACK(ThreadOpenConnections3(parg));
+	
+    // Make this thread recognisable as the connection opening thread
+    RenameThread("bitcoin-opencon2");
 
     try
     {
@@ -1569,6 +1593,7 @@ void ThreadMessageHandler(void* parg)
     printf("ThreadMessageHandler exited\n");
 }
 
+
 void ThreadMessageHandler2(void* parg)
 {
     printf("ThreadMessageHandler started\n");
@@ -1842,7 +1867,11 @@ void StartNode(void* parg)
     // Process messages
     if (!CreateThread(ThreadMessageHandler, NULL))
         printf("Error: CreateThread(ThreadMessageHandler) failed\n");
-
+		
+	// Process messages thread 2
+    if (!CreateThread(ThreadMessageHandler, NULL))
+        printf("Error: CreateThread(ThreadMessageHandler) failed\n");
+		
     // Dump network addresses
     if (!CreateThread(ThreadDumpAddress, NULL))
         printf("Error; CreateThread(ThreadDumpAddress) failed\n");
