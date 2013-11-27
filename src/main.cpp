@@ -1133,7 +1133,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
                 int numTooClose = 0;
                 int index = 1;
-                while(index != 61) {
+                while(index != 55) {
                     if(last60BlockTimes.at(last60BlockTimes.size()-index) - last60BlockTimes.at(last60BlockTimes.size()-(index+5)) == 600) {
                         numTooClose++;
                     }
