@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = goldcoin-qt
 macx:TARGET = "GoldCoin-Qt"
-VERSION = 0.7.1.6
+VERSION = 0.7.1.7
 INCLUDEPATH += src src/json src/qt
 QT += network
 DEFINES += QT_GUI BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE QT_STATIC_BUILD

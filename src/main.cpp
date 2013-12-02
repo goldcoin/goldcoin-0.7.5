@@ -1128,13 +1128,13 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 		//Causing difficulty to drop without end
 
         if(nHeight > novemberFork2) {
-            if((last59TimeDifferences[29]) >= 120) {
+            if(llabs((last59TimeDifferences[29])) >= 120) {
                 //Check to see whether we are in a deadlock situation with the 51% defense system
-
+				printf(" \n Deadlock detected \n");
                 int numTooClose = 0;
                 int index = 1;
                 while(index != 55) {
-                    if(last60BlockTimes.at(last60BlockTimes.size()-index) - last60BlockTimes.at(last60BlockTimes.size()-(index+5)) == 600) {
+                    if(llabs(last60BlockTimes.at(last60BlockTimes.size()-index) - last60BlockTimes.at(last60BlockTimes.size()-(index+5))) == 600) {
                         numTooClose++;
                     }
                     index++;
@@ -1143,7 +1143,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
                 if(numTooClose > 0) {
                     //We found 6 blocks that were solved in exactly 10 minutes
                     //Averaging 1.66 minutes per block
-
+					printf(" \n Deadlock fixed \n");
 
                     medTime = 110;
                 }

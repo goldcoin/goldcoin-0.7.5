@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = goldcoin-qt
 macx:TARGET = "GoldCoin-Qt"
-VERSION = 0.7.1.6
+VERSION = 0.7.1.7
 INCLUDEPATH += src src/json src/qt
 QT += core gui network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
