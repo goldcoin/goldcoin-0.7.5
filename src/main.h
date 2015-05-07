@@ -37,6 +37,7 @@ static const int64 MAX_MONEY = 123423900 * COIN; // GoldCoin (GLD): maximum of 1
 const int64 julyFork = 45000;
 const int64 novemberFork = 103000;
 const int64 novemberFork2 = 118800;
+const int64 mayFork = 247000;
 const int octoberFork = 100000;
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 static const int COINBASE_MATURITY = 100;
