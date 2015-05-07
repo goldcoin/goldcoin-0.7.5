@@ -210,6 +210,31 @@ string AccountFromValue(const Value& value)
     return strAccount;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex)
 {
     Object result;
@@ -2449,12 +2474,15 @@ Value getblockbyheight(const Array& params, bool fHelp)
     if (mapBlockIndex.count(hash) == 0)
         throw JSONRPCError(-5, "Block not found");
 
+
     CBlock block;
     CBlockIndex* pblockindex = mapBlockIndex[hash];
     block.ReadFromDisk(pblockindex, true);
 
     return blockToJSON(block, pblockindex);
 }
+
+
 
 
 // ppcoin: send alert.  

@@ -1121,16 +1121,80 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
         sort(last59TimeDifferences.begin(), last59TimeDifferences.end(), comp64);
 
         printf("  Median Time between blocks is: %"PRI64d" \n",last59TimeDifferences[29]);
-        int64 nActualTimespan = llabs((last59TimeDifferences[29]));
+		int64 nActualTimespan = llabs((last59TimeDifferences[29]));
         int64 medTime = nActualTimespan;
+		
+		if(nHeight > mayFork) {
+			//Difficulty Fix here for case where average time between blocks becomes far longer than 2 minutes, even though median time is close to 2 minutes.
+			//Uses the last 120 blocks(Should be 4 hours) for calculating
+
+            printf(" GetNextWorkRequired(): May Fork mode \n");
+			
+			CBlockIndex tblock1 = *pindexLast;//We want to copy pindexLast to avoid changing it accidentally
+			CBlockIndex* tblock2 = &tblock1;
+
+			std::vector<int64> last120BlockTimes;
+			// Limit adjustment step
+			//We need to set this in a way that reflects how fast blocks are actually being solved..
+			//First we find the last 120 blocks and take the time between blocks
+			//That gives us a list of 119 time differences
+			//Then we take the average of those times and multiply it by 60 to get our actualtimespan
+			while(last120BlockTimes.size() < 120) {
+			   last120BlockTimes.push_back(tblock2->GetBlockTime());
+			   if(tblock2->pprev)//should always be so
+			   tblock2 = tblock2->pprev;
+			}
+			std::vector<int64> last119TimeDifferences;
+
+			int xy = 0;
+			while(last119TimeDifferences.size() != 119) {
+				if(xy == 119) {
+					printf(" GetNextWorkRequired(): This shouldn't have happened 2 \n");
+					break;
+				}
+				last119TimeDifferences.push_back(llabs(last120BlockTimes[xy] - last120BlockTimes[xy+1]));
+				xy++;
+			}
+			int64 total = 0;
+
+            for(int x = 0; x < 119; x++) {
+                int64 timeN = last119TimeDifferences[x];
+                //printf(" GetNextWorkRequired(): Current Time difference is: %"PRI64d" \n",timeN);
+				total += timeN;
+			}
+			
+			int64 averageTime = total/119;
+
+
+            printf(" GetNextWorkRequired(): Average time between blocks over the last 120 blocks is: %"PRI64d" \n",averageTime);
+            /*printf(" GetNextWorkRequired(): Total Time (over 119 time differences) is: %"PRI64d" \n",total);
+            printf(" GetNextWorkRequired(): First Time (over 119 time differences) is: %"PRI64d" \n",last119TimeDifferences[0]);
+            printf(" GetNextWorkRequired(): Last Time (over 119 time differences) is: %"PRI64d" \n",last119TimeDifferences[118]);
+            printf(" GetNextWorkRequired(): Last Time is: %"PRI64d" \n",last120BlockTimes[119]);
+            printf(" GetNextWorkRequired(): 2nd Last Time is: %"PRI64d" \n",last120BlockTimes[118]);
+
+            printf(" GetNextWorkRequired(): First Time is: %"PRI64d" \n",last120BlockTimes[0]);
+            printf(" GetNextWorkRequired(): 2nd Time is: %"PRI64d" \n",last120BlockTimes[1]);*/
+
+            //If the average time between blocks exceeds or is equal to 3 minutes then increase the med time accordingly
+            if(averageTime >= 180) {
+				printf(" \n Average Time between blocks is too high.. Attempting to Adjust.. \n ");
+				medTime = 130;
+            } else if(averageTime >= 108 && medTime < 120) {
+				//If the average time between blocks is more than 1.8 minutes and medTime is less than 120 seconds (which would ordinarily prompt an increase in difficulty)
+				//limit the stepping to something reasonable(so we don't see massive difficulty spike followed by miners leaving in these situations).
+				medTime = 110;
+				printf(" \n Medium Time between blocks is too low compared to average time.. Attempting to Adjust.. \n ");
+			}
+		}
 
 		//Fixes an issue where median time between blocks is greater than 120 seconds and is not permitted to be lower by the defence system
 		//Causing difficulty to drop without end
 
         if(nHeight > novemberFork2) {
-            if(llabs((last59TimeDifferences[29])) >= 120) {
+            if(medTime >= 120) {
                 //Check to see whether we are in a deadlock situation with the 51% defense system
-				printf(" \n Deadlock detected \n");
+                printf(" \n Checking for DeadLocks \n");
                 int numTooClose = 0;
                 int index = 1;
                 while(index != 55) {
@@ -1143,9 +1207,11 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
                 if(numTooClose > 0) {
                     //We found 6 blocks that were solved in exactly 10 minutes
                     //Averaging 1.66 minutes per block
-					printf(" \n Deadlock fixed \n");
+                    printf(" \n DeadLock detected and fixed - Difficulty Increased to avoid bleeding edge of defence system \n");
 
                     medTime = 110;
+                } else {
+                    printf(" \n DeadLock not detected. \n");
                 }
 
 

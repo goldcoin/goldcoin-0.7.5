@@ -1511,4 +1511,4 @@ _bn_sub_part_words:
 	popl	%ebx
 	popl	%ebp
 	ret
-.comm	_OPENSSL_ia32cap_P,8
+.comm	_OPENSSL_ia32cap_P,16

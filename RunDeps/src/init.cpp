@@ -335,7 +335,7 @@ bool AppInit2()
     // GoldCoin (GLD): Keep irc seeding on by default for now.
 //    if (fTestNet)
 //    {
-        SoftSetBoolArg("-irc", true);
+        SoftSetBoolArg("-irc", false);
 //    }
 
     if (mapArgs.count("-bind")) {

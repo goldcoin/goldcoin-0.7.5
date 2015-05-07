@@ -29,8 +29,8 @@ _RC4:
 	movl	(%edi,%eax,4),%ecx
 	andl	$-4,%edx
 	jz	.L002loop1
-	testl	$-8,%edx
 	movl	%ebp,32(%esp)
+	testl	$-8,%edx
 	jz	.L003go4loop4
 	leal	_OPENSSL_ia32cap_P,%ebp
 	btl	$26,(%ebp)
@@ -366,4 +366,4 @@ _RC4_options:
 .byte	80,84,79,71,65,77,83,32,98,121,32,60,97,112,112,114
 .byte	111,64,111,112,101,110,115,115,108,46,111,114,103,62,0
 .align	64
-.comm	_OPENSSL_ia32cap_P,8
+.comm	_OPENSSL_ia32cap_P,16
