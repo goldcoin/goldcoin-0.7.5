@@ -1,1 +1,7 @@
 *~
+build/
+Test Release/
+debug/
+release/
+qrc_bitcoin.cpp
+.git/
