@@ -3,6 +3,7 @@ GoldCoin (GLD) - an improved version of Litecoin using scrypt as a proof of work
  - 2 minute block targets there after
  - 504 blocks per difficulty retarget up to block 45000
  - 60 blocks per difficulty retarget thereafter
+ - 51% difficulty adjusting defence system. Blocks multi-tiered double spending attempts(first of its kind).
 
 Block rewards in order:
 
@@ -15,6 +16,11 @@ Block rewards in order:
  - Total Reward Blocks: 26,325,000
  - Total Coins Produced: 123,423,900 (including 50 coin 0th block)
  - The default ports are 8121 (connect) and 8122 (fson rpc)
+ 
+ Note in order to properly mine GLD, an accurate system time is necessary. 
+ GLD will not accept blocks that are more than 45 seconds into the future and more than 2 minutes into the past.
+ 
+ This makes this coin ideal for time stamping purposes as well.
 
 Development process
 ===================
