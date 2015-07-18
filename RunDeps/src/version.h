@@ -32,7 +32,7 @@ extern const std::string CLIENT_DATE;
 // network protocol versioning
 //
 
-static const int PROTOCOL_VERSION = 60015;
+static const int PROTOCOL_VERSION = 60016;
 
 static const int MIN_PROTO_VERSION = 60005;
 // earlier versions not supported as of October 2013, and are disconnected

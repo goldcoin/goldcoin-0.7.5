@@ -907,6 +907,7 @@ static const int64 nTargetSpacing = 2.0 * 60;
 //
 // minimum amount of work that could possibly be required nTime after
 // minimum work required was nBase
+// Function currently ISN'T used except by test classes.. and hasn't been updated for julyFork2 either
 //
 unsigned int ComputeMinWork(unsigned int nBase, int64 nTime)
 {
@@ -987,6 +988,13 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
     static const int nDifficultySwitchHeight = 21000;
     int nHeight = pindexLast->nHeight + 1;
 	bool fNewDifficultyProtocol = (nHeight >= nDifficultySwitchHeight || fTestNet);
+
+    //julyFork2 whether or not we had a massive difficulty fall authorized
+    bool didHalfAdjust = false;
+
+    //moved to solve scope issues
+    int64 averageTime = 120;
+
 	if(nHeight < julyFork) {
 	//if(!hardForkedJuly) {
 		int64 nTargetTimespan2 = (7 * 24 * 60 * 60) / 8;
@@ -1059,8 +1067,9 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 		int64 nInterval = nTargetTimespanCurrent / nTargetSpacing;
 
 		// Only change once per interval, or at protocol switch height
+		// After julyFork2 we change difficulty at every block.. so we want this only to happen before that..
 		if ((nHeight % nInterval != 0) &&
-			(nHeight != nDifficultySwitchHeight || fTestNet))
+			(nHeight != nDifficultySwitchHeight || fTestNet) && (nHeight <= julyFork2))
 		{
 			// Special difficulty rule for testnet:
 			if (fTestNet)
@@ -1125,6 +1134,8 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
         int64 medTime = nActualTimespan;
 		
 		if(nHeight > mayFork) {
+			
+
 			//Difficulty Fix here for case where average time between blocks becomes far longer than 2 minutes, even though median time is close to 2 minutes.
 			//Uses the last 120 blocks(Should be 4 hours) for calculating
 
@@ -1163,7 +1174,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 				total += timeN;
 			}
 			
-			int64 averageTime = total/119;
+            averageTime = total/119;
 
 
             printf(" GetNextWorkRequired(): Average time between blocks over the last 120 blocks is: %"PRI64d" \n",averageTime);
@@ -1176,15 +1187,45 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
             printf(" GetNextWorkRequired(): First Time is: %"PRI64d" \n",last120BlockTimes[0]);
             printf(" GetNextWorkRequired(): 2nd Time is: %"PRI64d" \n",last120BlockTimes[1]);*/
 
-            //If the average time between blocks exceeds or is equal to 3 minutes then increase the med time accordingly
-            if(averageTime >= 180) {
-				printf(" \n Average Time between blocks is too high.. Attempting to Adjust.. \n ");
-				medTime = 130;
-            } else if(averageTime >= 108 && medTime < 120) {
-				//If the average time between blocks is more than 1.8 minutes and medTime is less than 120 seconds (which would ordinarily prompt an increase in difficulty)
-				//limit the stepping to something reasonable(so we don't see massive difficulty spike followed by miners leaving in these situations).
-				medTime = 110;
-				printf(" \n Medium Time between blocks is too low compared to average time.. Attempting to Adjust.. \n ");
+			if(nHeight <= julyFork2) {
+				//If the average time between blocks exceeds or is equal to 3 minutes then increase the med time accordingly
+				if(averageTime >= 180) {
+					printf(" \n Average Time between blocks is too high.. Attempting to Adjust.. \n ");
+					medTime = 130;
+				} else if(averageTime >= 108 && medTime < 120) {
+					//If the average time between blocks is more than 1.8 minutes and medTime is less than 120 seconds (which would ordinarily prompt an increase in difficulty)
+					//limit the stepping to something reasonable(so we don't see massive difficulty spike followed by miners leaving in these situations).
+					medTime = 110;
+					printf(" \n Medium Time between blocks is too low compared to average time.. Attempting to Adjust.. \n ");
+				}
+			} else {//julyFork2 changes here
+
+				//Calculate difficulty of previous block as a double
+                /*int nShift = (pindexLast->nBits >> 24) & 0xff;
+
+				double dDiff =
+					(double)0x0000ffff / (double)(pindexLast->nBits & 0x00ffffff);
+
+				while (nShift < 29)
+				{
+					dDiff *= 256.0;
+					nShift++;
+				}
+				while (nShift > 29)
+				{
+					dDiff /= 256.0;
+					nShift--;
+                } */
+				
+				//int64 hashrate = (int64)(dDiff * pow(2.0,32.0))/((medTime > averageTime)?averageTime:medTime);
+				
+				medTime = (medTime > averageTime)?averageTime:medTime;
+				
+				if(averageTime >= 180 && last119TimeDifferences[0] >= 1200 && last119TimeDifferences[1] >= 1200) {
+					didHalfAdjust = true;
+					medTime = 240;
+				}
+				
 			}
 		}
 
@@ -1209,7 +1250,11 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
                     //Averaging 1.66 minutes per block
                     printf(" \n DeadLock detected and fixed - Difficulty Increased to avoid bleeding edge of defence system \n");
 
-                    medTime = 110;
+					if(nHeight > julyFork2) {
+						medTime = 119;
+					} else {
+						medTime = 110;
+					}
                 } else {
                     printf(" \n DeadLock not detected. \n");
                 }
@@ -1218,21 +1263,131 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
             }
         }
 		
-        nActualTimespan = medTime * 60;
 		
-		printf("  nActualTimespan = %"PRI64d"  before bounds\n", nActualTimespan);
-		int64 nActualTimespanMax = fNewDifficultyProtocol? ((nTargetTimespanCurrent*99)/70) : (nTargetTimespanCurrent*4);
-		int64 nActualTimespanMin = fNewDifficultyProtocol? ((nTargetTimespanCurrent*70)/99) : (nTargetTimespanCurrent/4);
-		if (nActualTimespan < nActualTimespanMin)
-			nActualTimespan = nActualTimespanMin;
-		if (nActualTimespan > nActualTimespanMax)
-		   nActualTimespan = nActualTimespanMax;
+		if(nHeight > julyFork2) {
+			//216 == (int64) 180.0/100.0 * 120
+			//122 == (int64) 102.0/100.0 * 120 == 122.4 
+			if(averageTime > 216 || medTime > 122) {
+				if(didHalfAdjust) {
+					// If the average time between blocks was
+					// too high.. allow a dramatic difficulty
+					// fall..
+                    medTime = (int64)(120 * 142.0/100.0);
+				} else {
+					// Otherwise only allow a 120/119 fall per block
+					// maximum.. As we now adjust per block..
+					// 121 == (int64) 120 * 120.0/119.0
+					medTime = 121;
+				}
+			} 
+			// 117 -- (int64) 120.0 * 98.0/100.0
+			else if(averageTime < 117 || medTime < 117)  {
+				// If the average time between blocks is within 2% of target
+				// value
+				// Or if the median time stamp between blocks is within 2% of
+				// the target value
+				// Limit diff increase to 2%
+				medTime = 117;
+			}			
+			nActualTimespan = medTime * 60;
+		} else {
 		
-		// Retarget
-		bnNew.SetCompact(pindexLast->nBits);
-		bnNew *= nActualTimespan;
-		bnNew /= nTargetTimespanCurrent;
+			nActualTimespan = medTime * 60;
+			
+			printf("  nActualTimespan = %"PRI64d"  before bounds\n", nActualTimespan);
+			int64 nActualTimespanMax = fNewDifficultyProtocol? ((nTargetTimespanCurrent*99)/70) : (nTargetTimespanCurrent*4);
+			int64 nActualTimespanMin = fNewDifficultyProtocol? ((nTargetTimespanCurrent*70)/99) : (nTargetTimespanCurrent/4);
+			if (nActualTimespan < nActualTimespanMin)
+				nActualTimespan = nActualTimespanMin;
+			if (nActualTimespan > nActualTimespanMax)
+			   nActualTimespan = nActualTimespanMax;
+	   
+		}
+		
+		
+		if(nHeight > julyFork2) {
+            CBlockIndex tblock11 = *pindexLast;//We want to copy pindexLast to avoid changing it accidentally
+            CBlockIndex* tblock22 = &tblock11;
 
+            // We want to limit the possible difficulty raise/fall over 60 and 240 blocks here
+            // So we get the difficulty at 60 and 240 blocks ago
+
+            int64 nbits60ago = NULL;
+            int64 nbits240ago = NULL;
+            int counter = 0;
+            //Note: 0 is the current block, we want 60 past current
+            while(counter <= 240) {
+                if(counter == 60) {
+                    nbits60ago = tblock22->nBits;
+                } else if(counter == 240) {
+                    nbits240ago = tblock22->nBits;
+                }
+               if(tblock22->pprev)//should always be so
+               tblock22 = tblock22->pprev;
+
+               counter++;
+            }
+
+			//Now we get the old targets
+			CBigNum bn60ago = 0, bn240ago = 0, bnLast = 0;
+			bn60ago.SetCompact(nbits60ago);
+			bn240ago.SetCompact(nbits240ago);
+			bnLast.SetCompact(pindexLast->nBits);
+			
+			//Set the new target
+			bnNew.SetCompact(pindexLast->nBits);
+			bnNew *= nActualTimespan;
+			bnNew /= nTargetTimespanCurrent;
+			
+			
+			//Now we have the difficulty at those blocks..
+			
+			// Set a floor on difficulty decreases per block(20% lower maximum
+			// than the previous block difficulty).. when there was no halfing
+            // necessary.. 10/8 == 1.0/0.8
+            bnLast *= 10;
+            bnLast /= 8;
+
+            if(!didHalfAdjust && bnNew.getuint256() > bnLast.getuint256()) {
+                bnNew.SetCompact(bnLast.GetCompact());
+            }
+
+            bnLast *= 8;
+            bnLast /= 10;
+
+			// Set ceilings on difficulty increases per block
+
+            //1.0/1.02 == 100/102
+            bn60ago *= 100;
+            bn60ago /= 102;
+
+            if(bnNew.getuint256() < bn60ago.getuint256()) {
+                bnNew.SetCompact(bn60ago.GetCompact());
+			}
+
+            bn60ago *= 102;
+            bn60ago /= 100;
+
+            //1.0/(1.02*4) ==  100 / 408
+
+            bn240ago *= 100;
+            bn240ago /= 408;
+
+            if(bnNew.getuint256() < bn240ago.getuint256()) {
+                bnNew.SetCompact(bn240ago.GetCompact());
+			}
+
+            bn240ago *= 408;
+            bn240ago /= 100;
+			
+		} else {
+			// Retarget
+			bnNew.SetCompact(pindexLast->nBits);
+			bnNew *= nActualTimespan;
+			bnNew /= nTargetTimespanCurrent;
+		}
+		
+		//Sets a ceiling on highest target value (lowest possible difficulty)
 		if (bnNew > bnProofOfWorkLimit)
 			bnNew = bnProofOfWorkLimit;
 
