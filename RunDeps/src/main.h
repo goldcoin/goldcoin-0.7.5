@@ -40,7 +40,7 @@ const int64 novemberFork2 = 118800;
 const int64 mayFork = 248000;
 const int octoberFork = 100000;
 
-const int64 julyFork2 = 253000;
+const int64 julyFork2 = 251230;
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 static const int COINBASE_MATURITY = 100;
 // Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp.
