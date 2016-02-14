@@ -891,7 +891,11 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
     {
 		hardForkedJuly = true;
 		//nSubsidy = Calculate(400,julyFork,2,8,nHeight) * COIN;
-        nSubsidy = (int64)(50.0/(1.1 + 0.49*((nHeight-julyFork)/262800))) * COIN;
+		if(nHeight >= febFork) {
+			nSubsidy = (int64)(50.0/(1.1 + 0.49*((nHeight+4884000-julyFork)/262800))) * COIN;
+		} else {
+			nSubsidy = (int64)(50.0/(1.1 + 0.49*((nHeight-julyFork)/262800))) * COIN;
+		}
 		if(nHeight >= novemberFork) {
 			hardForkedNovember = true;
 		}

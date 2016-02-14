@@ -1,4 +1,4 @@
-cd "C:\Users\a\Desktop\Coding - Work\GoldCoin\Coding\gldcoin-master\src"
+cd "C:\Users\Amir\Desktop\GitHub\gldcoin\src"
 rmdir /s /Q obj
 del goldcoind.exe
 mkdir obj

@@ -16,7 +16,7 @@
 #define CLIENT_VERSION_MAJOR       0
 #define CLIENT_VERSION_MINOR       7
 #define CLIENT_VERSION_REVISION    2
-#define CLIENT_VERSION_BUILD       0
+#define CLIENT_VERSION_BUILD       1
 
 static const int CLIENT_VERSION =
                            1000000 * CLIENT_VERSION_MAJOR
@@ -32,9 +32,9 @@ extern const std::string CLIENT_DATE;
 // network protocol versioning
 //
 
-static const int PROTOCOL_VERSION = 60017;
+static const int PROTOCOL_VERSION = 60018;
 
-static const int MIN_PROTO_VERSION = 60005;
+static const int MIN_PROTO_VERSION = 60017;
 // earlier versions not supported as of October 2013, and are disconnected
 // 60004 deprecates in a week! make sure to upgrade to 7.1.1 before then.
 
