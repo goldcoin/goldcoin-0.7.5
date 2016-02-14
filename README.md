@@ -4,6 +4,8 @@ GoldCoin (GLD) - an improved version of Litecoin using scrypt as a proof of work
  - 504 blocks per difficulty retarget up to block 45000
  - 60 blocks per difficulty retarget thereafter
  - 51% difficulty adjusting defence system. Blocks multi-tiered double spending attempts(first of its kind).
+ - Golden River difficulty algorithmn - Better than gravity wave. 
+ - Pure POW.
 
 Block rewards in order:
 
@@ -13,8 +15,9 @@ Block rewards in order:
  - (The values below are post-fork in development/dispute values)
  - The Block reward drops to 45 GLD
  - Reward for the years thereafter is 50 divided by (1.1 + 0.49*every year after fork)
- - Total Reward Blocks: 26,325,000
- - Total Coins Produced: 123,423,900 (including 50 coin 0th block)
+ - There is a 20 year jump that occurs at block 372,000
+ - Total Reward Blocks: 21,441,000
+ - Total Coins Produced: 72,245,700 (including 50 coin 0th block)
  - The default ports are 8121 (connect) and 8122 (fson rpc)
  
  Note in order to properly mine GLD, an accurate system time is necessary. 
@@ -62,4 +65,3 @@ Consultants
 - Sting17
 - Microguy
 - AZIZ1977
-
