@@ -2,7 +2,8 @@ GoldCoin (GLD) - an improved version of Litecoin using scrypt as a proof of work
  - 2.5 minute block targets up till block 45000
  - 2 minute block targets there after
  - 504 blocks per difficulty retarget up to block 45000
- - 60 blocks per difficulty retarget thereafter
+ - 60 blocks per difficulty retarget up to block 251230
+ - 1 block per difficulty retarget thereafter
  - 51% difficulty adjusting defence system. Blocks multi-tiered double spending attempts(first of its kind).
  - Golden River difficulty algorithmn - Better than gravity wave. 
  - Pure POW.
