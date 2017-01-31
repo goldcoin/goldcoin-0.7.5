@@ -65,7 +65,6 @@ Consultants
 ================
 - Sting17
 - Microguy
-- Aziz1977
+- CryptoSolar
 - Psionin
 - CryptoCanary
-- CryptoSolar
