@@ -65,5 +65,6 @@ Consultants
 ================
 - Sting17
 - Microguy
-- AZIZ1977
-
+- Aziz1977
+- Psionin
+- CryptoCanary
