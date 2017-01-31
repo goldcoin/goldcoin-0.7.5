@@ -68,3 +68,4 @@ Consultants
 - Aziz1977
 - Psionin
 - CryptoCanary
+- CryptoSolar
