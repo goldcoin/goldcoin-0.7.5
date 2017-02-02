@@ -2451,6 +2451,10 @@ bool CBlock::AcceptBlock()
     if (!Checkpoints::CheckBlock(nHeight, hash))
         return DoS(100, error("AcceptBlock() : rejected by checkpoint lockin at %d", nHeight));
 
+    // Make sure the block does not match any known badpoints
+    if (Checkpoints::CheckBadBlock(hash))
+        return DoS(100, error("AcceptBlock() : rejected by bad block match occuring at height: %d", nHeight));
+
     //Ensure this block's past 5 blocks pass the 51% defense requirements
     if(pindexPrev)
         if(pindexPrev->pprev)
@@ -2483,11 +2487,22 @@ bool CBlock::AcceptBlock()
                 pnode->PushInventory(CInv(MSG_BLOCK, hash));
     }
 
-    //Checkpoint this block in memory, if it is a checkpoint block
-    if(checkpointBlockNum == nHeight && checkpointBlockNum != -1) {
-        Checkpoints::addCheckpoint(nHeight,hash);
-        checkpointBlockNum = -1;
+    //Checkpoint this block's 10th anscestor
+    if(checkpointBlockNum <= nHeight && checkpointBlockNum != -1) {
+    	if(pindexPrev) 
+    	if(pindexPrev->pprev) 
+    	if(pindexPrev->pprev->pprev) 
+    	if(pindexPrev->pprev->pprev->pprev) 
+    	if(pindexPrev->pprev->pprev->pprev->pprev) 
+    	if(pindexPrev->pprev->pprev->pprev->pprev->pprev) 
+    	if(pindexPrev->pprev->pprev->pprev->pprev->pprev->pprev) 
+    	if(pindexPrev->pprev->pprev->pprev->pprev->pprev->pprev->pprev) 
+    	if(pindexPrev->pprev->pprev->pprev->pprev->pprev->pprev->pprev->pprev) 
+    	if(pindexPrev->pprev->pprev->pprev->pprev->pprev->pprev->pprev->pprev->pprev) {
+    		Checkpoints::addCheckpoint(nHeight-10,pindexPrev->pprev->pprev->pprev->pprev->pprev->pprev->pprev->pprev->pprev->GetBlockHash());
+    	}
     }
+
     return true;
 }
 
@@ -2586,12 +2601,14 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 						
 						//Now we check whether the first block we recorded was within 10 minutes of our time
 						//Or if we are past block 100K and it should work anyhow...
-						if((QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::currentDateTime()) < (60*10)) || nBestHeight > octoberFork) {
+						//Since we had a few slips ie at block: 100026 and 480368
+						//I've moved this to after the lastest checkpoint
+						if((QDateTime::fromTime_t(lastFiveBlocks.front().timeStamp).secsTo(QDateTime::currentDateTime()) < (60*10)) || nBestHeight > 564000) {
 							//printf("Stage 3 Entered\n");
 							
 							//If so then we check if the current block is within 2 minutes of our time
 							//We don't want to ban peers for transmitting old blocks that were accepted prior to this change!
-							if((QDateTime::fromTime_t(pblock->GetBlockTime()).secsTo(QDateTime::currentDateTime()) <= (60*2)) || nBestHeight > octoberFork)
+							if((QDateTime::fromTime_t(pblock->GetBlockTime()).secsTo(QDateTime::currentDateTime()) <= (60*2)) || nBestHeight > 564000)
 							{
 								//printf("Stage 4 Entered\n");
 								//We must delay the transmittance of the next block(good or bad) for 14 minutes, 
@@ -2603,17 +2620,20 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 								time(&defenseStartTime);
 								
 								//If the block being accepted isn't local
-								if(lastFiveBlocks.at(0).peerIp.compare("local") != 0) {
-									//Now we schedule a checkpoint 12 blocks from now!
+								if(pfrom->addr.ToString().find("local") == std::string::npos && pfrom->addr.ToString().find("127.0.0.") == std::string::npos) {
+									//We blacklist this block
+									Checkpoints::addBadBlock(hash);
+
+									//Schedule checkpoint 12 blocks from now
 									checkpointBlockNum = nBestHeight + 12;
+
 									
 									//If so then we ban them locally for 4 hours
 									if (pfrom)
 									pfrom->Misbehaving(50);
 									return error("\n ProcessBlock() : 51 percent attempt detected and TERMINATED O_O \n");
 								} else {
-									//Otherwise do nothing
-									//Level-2 should catch us
+									return error("ProcessBlock() : Attempted to mine block with disallowed timestamp. Timestamp violates defence rules.");
 								}
 								
 							} else {
@@ -2633,7 +2653,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
             if(pindexBest->pprev)
                 if(pindexBest->pprev->pprev)
                     if(pindexBest->pprev->pprev->pprev)
-                        if(pindexBest->pprev->pprev->pprev->pprev && nBestHeight > octoberFork) {
+                        if(pindexBest->pprev->pprev->pprev->pprev && nBestHeight > febFork) {
                             if(QDateTime::fromTime_t(pindexBest->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*10) && pblock->hashPrevBlock == pindexBest->GetBlockHash()) {
                                 return error("\n ProcessBlock() : Possible Multipeer 51 percent detected, initiating anti-legit-peerban defense! halting until valid block! This is normal.. \n");
                             } else if(pblock->hashPrevBlock != pindexBest->GetBlockHash() && QDateTime::fromTime_t(pindexBest->pprev->pprev->pprev->pprev->GetBlockTime()).secsTo(QDateTime::fromTime_t(pblock->GetBlockTime())) < (60*10)) {//Block sent that is trying to switch chains and is in the past

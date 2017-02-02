@@ -39,7 +39,7 @@ const int64 novemberFork = 103000;
 const int64 novemberFork2 = 118800;
 const int64 mayFork = 248000;
 const int64 febFork = 372000;
-const int octoberFork = 100000;
+const int64 octoberFork = 100000;
 
 const int64 julyFork2 = 251230;
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }

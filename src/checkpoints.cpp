@@ -16,7 +16,6 @@
 namespace Checkpoints
 {
     typedef std::map<int, uint256> MapCheckpoints;
-
     //
     // What makes a good checkpoint block?
     // + Is surrounded by blocks with reasonable timestamps
@@ -57,8 +56,31 @@ namespace Checkpoints
 			(     100000, uint256("0x292b50277877a5d7780614f460f669467d09f7d47a84765fb9633c9c78aa035a"))
 			(     100989, uint256("0xb0a9b5749a77c6b3f17935fe220c8a76d56003d2f9e2cbd281f5a7315eae5924"))
             (     115300, uint256("0x77b3f1913755a4d381f36cd134f280a6519dd54d1c33c499eeded256f36bb394"))
-            (     246100, uint256("0xca7ed43264e0e8965d4115d2f8d3fabb63dcb430fe502d31796c63658ab8274d"));
+            (     246100, uint256("0xca7ed43264e0e8965d4115d2f8d3fabb63dcb430fe502d31796c63658ab8274d"))
+            (     300000, uint256("0xe81d2c84c9e7332b35788c1166a0b2c9a34be4d17f08f44a9ba2f5edd82dc300"))
+            (     372000, uint256("0xe3d2857896d0f52ac502eb056ac23f416cb7eddb0a6eba68785b940cca8257ee"))
+            (     564000, uint256("0x9d67ce445d6b513074ef061066bb331871901b953b3bdeaa4dc0a4043cf189f8"))
+            ;
 
+    static std::list<uint256> badBlockList;
+
+
+    void addBadBlock(uint256 hash) 
+    {
+        badBlockList.push_back(hash);
+    }
+
+    void removeBadBlock(uint256 hash)
+    {
+        badBlockList.remove(hash);
+    }
+
+    bool CheckBadBlock(const uint256& hash)
+    {
+        if (fTestNet) return false; // Testnet has no bad blocks
+
+        return std::find(badBlockList.begin(), badBlockList.end(), hash) != badBlockList.end();        
+    }
 
     bool CheckBlock(int nHeight, const uint256& hash)
     {
@@ -79,6 +101,11 @@ namespace Checkpoints
 	{
         mapCheckpoints.insert(std::pair<int, uint256>(nHeight,hash));
 	}
+
+    void removeCheckpoint(int nHeight)
+    {
+        mapCheckpoints.erase(mapCheckpoints.find(nHeight));
+    }
 
     CBlockIndex* GetLastCheckpoint(const std::map<uint256, CBlockIndex*>& mapBlockIndex)
     {
