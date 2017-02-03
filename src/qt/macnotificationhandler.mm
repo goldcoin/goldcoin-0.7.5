@@ -6,7 +6,7 @@
 void MacNotificationHandler::showNotification(const QString &title, const QString &text)
 {
     // check if users OS has support for NSUserNotification
-    if(this->hasUserNotificationCenterSupport()) {
+    if (this->hasUserNotificationCenterSupport()) {
         // okay, seems like 10.8+
         QByteArray utf8 = title.toUtf8();
         char* cString = (char *)utf8.constData();
@@ -49,7 +49,7 @@ bool MacNotificationHandler::hasUserNotificationCenterSupport(void)
     Class possibleClass = NSClassFromString(@"NSUserNotificationCenter");
 
     // check if users OS has support for NSUserNotification
-    if(possibleClass!=nil) {
+    if (possibleClass != nil) {
         return true;
     }
     return false;

@@ -36,19 +36,19 @@ int CAddrInfo::GetNewBucket(const std::vector<unsigned char> &nKey, const CNetAd
 
 bool CAddrInfo::IsTerrible(int64 nNow) const
 {
-    if (nLastTry && nLastTry >= nNow-60) // never remove things tried the last minute
+    if (nLastTry && nLastTry >= nNow - 60) // never remove things tried the last minute
         return false;
 
-    if (nTime > nNow + 10*60) // came in a flying DeLorean
+    if (nTime > nNow + 10 * 60) // came in a flying DeLorean
         return true;
 
-    if (nTime==0 || nNow-nTime > ADDRMAN_HORIZON_DAYS*86400) // not seen in over a month
+    if (nTime == 0 || nNow - nTime > ADDRMAN_HORIZON_DAYS * 86400) // not seen in over a month
         return true;
 
-    if (nLastSuccess==0 && nAttempts>=ADDRMAN_RETRIES) // tried three times and never a success
+    if (nLastSuccess == 0 && nAttempts >= ADDRMAN_RETRIES) // tried three times and never a success
         return true;
 
-    if (nNow-nLastSuccess > ADDRMAN_MIN_FAIL_DAYS*86400 && nAttempts>=ADDRMAN_MAX_FAILURES) // 10 successive failures in the last week
+    if (nNow - nLastSuccess > ADDRMAN_MIN_FAIL_DAYS * 86400 && nAttempts >= ADDRMAN_MAX_FAILURES) // 10 successive failures in the last week
         return true;
 
     return false;
@@ -67,11 +67,11 @@ double CAddrInfo::GetChance(int64 nNow) const
     fChance *= 600.0 / (600.0 + nSinceLastSeen);
 
     // deprioritize very recent attempts away
-    if (nSinceLastTry < 60*10)
+    if (nSinceLastTry < 60 * 10)
         fChance *= 0.01;
 
     // deprioritize 50% after each failed attempt
-    for (int n=0; n<nAttempts; n++)
+    for (int n = 0; n < nAttempts; n++)
         fChance /= 1.5;
 
     return fChance;
@@ -138,8 +138,8 @@ int CAddrMan::SelectTried(int nKBucket)
         vTried[i] = nTemp;
         assert(nOldest == -1 || mapInfo.count(nTemp) == 1);
         if (nOldest == -1 || mapInfo[nTemp].nLastSuccess < mapInfo[nOldest].nLastSuccess) {
-           nOldest = nTemp;
-           nOldestPos = nPos;
+            nOldest = nTemp;
+            nOldestPos = nPos;
         }
     }
 
@@ -160,7 +160,7 @@ int CAddrMan::ShrinkNew(int nUBucket)
         {
             if (--info.nRefCount == 0)
             {
-                SwapRandom(info.nRandomPos, vRandom.size()-1);
+                SwapRandom(info.nRandomPos, vRandom.size() - 1);
                 vRandom.pop_back();
                 mapAddr.erase(info);
                 mapInfo.erase(*it);
@@ -187,9 +187,9 @@ int CAddrMan::ShrinkNew(int nUBucket)
     }
     assert(mapInfo.count(nOldest) == 1);
     CAddrInfo &info = mapInfo[nOldest];
-    if (--info.nRefCount == 0) 
+    if (--info.nRefCount == 0)
     {
-        SwapRandom(info.nRandomPos, vRandom.size()-1);
+        SwapRandom(info.nRandomPos, vRandom.size() - 1);
         vRandom.pop_back();
         mapAddr.erase(info);
         mapInfo.erase(nOldest);
@@ -241,7 +241,7 @@ void CAddrMan::MakeTried(CAddrInfo& info, int nId, int nOrigin)
     infoOld.nRefCount = 1;
     // do not update nTried, as we are going to move something else there immediately
 
-    // check whether there is place in that one, 
+    // check whether there is place in that one,
     if (vNew.size() < ADDRMAN_NEW_BUCKET_SIZE)
     {
         // if so, move it back there
@@ -290,7 +290,7 @@ void CAddrMan::Good_(const CService &addr, int64 nTime)
     int nUBucket = -1;
     for (unsigned int n = 0; n < vvNew.size(); n++)
     {
-        int nB = (n+nRnd) % vvNew.size();
+        int nB = (n + nRnd) % vvNew.size();
         std::set<int> &vNew = vvNew[nB];
         if (vNew.count(nId))
         {
@@ -343,7 +343,7 @@ bool CAddrMan::Add_(const CAddress &addr, const CNetAddr& source, int64 nTimePen
 
         // stochastic test: previous nRefCount == N: 2^N times harder to increase it
         int nFactor = 1;
-        for (int n=0; n<pinfo->nRefCount; n++)
+        for (int n = 0; n < pinfo->nRefCount; n++)
             nFactor *= 2;
         if (nFactor > 1 && (GetRandInt(nFactor) != 0))
             return false;
@@ -393,11 +393,11 @@ CAddress CAddrMan::Select_(int nUnkBias)
 
     double nCorTried = sqrt(nTried) * (100.0 - nUnkBias);
     double nCorNew = sqrt(nNew) * nUnkBias;
-    if ((nCorTried + nCorNew)*GetRandInt(1<<30)/(1<<30) < nCorTried)
+    if ((nCorTried + nCorNew)*GetRandInt(1 << 30) / (1 << 30) < nCorTried)
     {
         // use a tried node
         double fChanceFactor = 1.0;
-        while(1)
+        while (1)
         {
             int nKBucket = GetRandInt(vvTried.size());
             std::vector<int> &vTried = vvTried[nKBucket];
@@ -405,14 +405,14 @@ CAddress CAddrMan::Select_(int nUnkBias)
             int nPos = GetRandInt(vTried.size());
             assert(mapInfo.count(vTried[nPos]) == 1);
             CAddrInfo &info = mapInfo[vTried[nPos]];
-            if (GetRandInt(1<<30) < fChanceFactor*info.GetChance()*(1<<30))
+            if (GetRandInt(1 << 30) < fChanceFactor * info.GetChance() * (1 << 30))
                 return info;
             fChanceFactor *= 1.2;
         }
     } else {
         // use an new node
         double fChanceFactor = 1.0;
-        while(1)
+        while (1)
         {
             int nUBucket = GetRandInt(vvNew.size());
             std::set<int> &vNew = vvNew[nUBucket];
@@ -423,7 +423,7 @@ CAddress CAddrMan::Select_(int nUnkBias)
                 it++;
             assert(mapInfo.count(*it) == 1);
             CAddrInfo &info = mapInfo[*it];
-            if (GetRandInt(1<<30) < fChanceFactor*info.GetChance()*(1<<30))
+            if (GetRandInt(1 << 30) < fChanceFactor * info.GetChance() * (1 << 30))
                 return info;
             fChanceFactor *= 1.2;
         }
@@ -454,7 +454,7 @@ int CAddrMan::Check_()
             mapNew[n] = info.nRefCount;
         }
         if (mapAddr[info] != n) return -5;
-        if (info.nRandomPos<0 || info.nRandomPos>=vRandom.size() || vRandom[info.nRandomPos] != n) return -14;
+        if (info.nRandomPos < 0 || info.nRandomPos >= vRandom.size() || vRandom[info.nRandomPos] != n) return -14;
         if (info.nLastTry < 0) return -6;
         if (info.nLastSuccess < 0) return -8;
     }
@@ -462,7 +462,7 @@ int CAddrMan::Check_()
     if (setTried.size() != nTried) return -9;
     if (mapNew.size() != nNew) return -10;
 
-    for (int n=0; n<vvTried.size(); n++)
+    for (int n = 0; n < vvTried.size(); n++)
     {
         std::vector<int> &vTried = vvTried[n];
         for (std::vector<int>::iterator it = vTried.begin(); it != vTried.end(); it++)
@@ -472,7 +472,7 @@ int CAddrMan::Check_()
         }
     }
 
-    for (int n=0; n<vvNew.size(); n++)
+    for (int n = 0; n < vvNew.size(); n++)
     {
         std::set<int> &vNew = vvNew[n];
         for (std::set<int>::iterator it = vNew.begin(); it != vNew.end(); it++)
@@ -492,12 +492,12 @@ int CAddrMan::Check_()
 
 void CAddrMan::GetAddr_(std::vector<CAddress> &vAddr)
 {
-    int nNodes = ADDRMAN_GETADDR_MAX_PCT*vRandom.size()/100;
+    int nNodes = ADDRMAN_GETADDR_MAX_PCT * vRandom.size() / 100;
     if (nNodes > ADDRMAN_GETADDR_MAX)
         nNodes = ADDRMAN_GETADDR_MAX;
 
     // perform a random shuffle over the first nNodes elements of vRandom (selecting from all)
-    for (int n = 0; n<nNodes; n++)
+    for (int n = 0; n < nNodes; n++)
     {
         int nRndPos = GetRandInt(vRandom.size() - n) + n;
         SwapRandom(n, nRndPos);

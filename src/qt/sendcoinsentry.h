@@ -4,7 +4,7 @@
 #include <QFrame>
 
 namespace Ui {
-    class SendCoinsEntry;
+class SendCoinsEntry;
 }
 class WalletModel;
 class SendCoinsRecipient;

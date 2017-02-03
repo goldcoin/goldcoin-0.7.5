@@ -58,7 +58,7 @@ public:
 
     void CloseDb(const std::string& strFile);
 
-    DbTxn *TxnBegin(int flags=DB_TXN_WRITE_NOSYNC)
+    DbTxn *TxnBegin(int flags = DB_TXN_WRITE_NOSYNC)
     {
         DbTxn* ptxn = NULL;
         int ret = dbenv.txn_begin(NULL, &ptxn, flags);
@@ -80,7 +80,7 @@ protected:
     DbTxn *activeTxn;
     bool fReadOnly;
 
-    explicit CDB(const char* pszFile, const char* pszMode="r+");
+    explicit CDB(const char* pszFile, const char* pszMode = "r+");
     ~CDB() { Close(); }
 public:
     void Close();
@@ -125,7 +125,7 @@ protected:
     }
 
     template<typename K, typename T>
-    bool Write(const K& key, const T& value, bool fOverwrite=true)
+    bool Write(const K& key, const T& value, bool fOverwrite = true)
     {
         if (!pdb)
             return false;
@@ -206,7 +206,7 @@ protected:
         return pcursor;
     }
 
-    int ReadAtCursor(Dbc* pcursor, CDataStream& ssKey, CDataStream& ssValue, unsigned int fFlags=DB_NEXT)
+    int ReadAtCursor(Dbc* pcursor, CDataStream& ssKey, CDataStream& ssValue, unsigned int fFlags = DB_NEXT)
     {
         // Read at cursor
         Dbt datKey;
@@ -299,7 +299,7 @@ public:
 class CTxDB : public CDB
 {
 public:
-    CTxDB(const char* pszMode="r+") : CDB("blkindex.dat", pszMode) { }
+    CTxDB(const char* pszMode = "r+") : CDB("blkindex.dat", pszMode) { }
 private:
     CTxDB(const CTxDB&);
     void operator=(const CTxDB&);

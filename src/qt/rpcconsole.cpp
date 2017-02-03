@@ -51,7 +51,7 @@ signals:
 
 void RPCExecutor::start()
 {
-   // Nothing to do
+    // Nothing to do
 }
 
 void RPCExecutor::request(const QString &command)
@@ -60,20 +60,20 @@ void RPCExecutor::request(const QString &command)
     std::string strMethod;
     std::vector<std::string> strParams;
     try {
-        boost::escaped_list_separator<char> els('\\',' ','\"');
+        boost::escaped_list_separator<char> els('\\', ' ', '\"');
         std::string strCommand = command.toStdString();
         boost::tokenizer<boost::escaped_list_separator<char> > tok(strCommand, els);
 
         int n = 0;
-        for(boost::tokenizer<boost::escaped_list_separator<char> >::iterator beg=tok.begin(); beg!=tok.end();++beg,++n)
+        for (boost::tokenizer<boost::escaped_list_separator<char> >::iterator beg = tok.begin(); beg != tok.end(); ++beg, ++n)
         {
-            if(n == 0) // First parameter is the command
+            if (n == 0) // First parameter is the command
                 strMethod = *beg;
             else
                 strParams.push_back(*beg);
         }
     }
-    catch(boost::escaped_list_error &e)
+    catch (boost::escaped_list_error &e)
     {
         emit reply(RPCConsole::CMD_ERROR, QString("Parse error"));
         return;
@@ -136,12 +136,12 @@ RPCConsole::~RPCConsole()
 
 bool RPCConsole::eventFilter(QObject* obj, QEvent *event)
 {
-    if(obj == ui->lineEdit)
+    if (obj == ui->lineEdit)
     {
-        if(event->type() == QEvent::KeyPress)
+        if (event->type() == QEvent::KeyPress)
         {
             QKeyEvent *key = static_cast<QKeyEvent*>(event);
-            switch(key->key())
+            switch (key->key())
             {
             case Qt::Key_Up: browseHistory(-1); return true;
             case Qt::Key_Down: browseHistory(1); return true;
@@ -154,11 +154,11 @@ bool RPCConsole::eventFilter(QObject* obj, QEvent *event)
 void RPCConsole::setClientModel(ClientModel *model)
 {
     this->clientModel = model;
-    if(model)
+    if (model)
     {
         // Subscribe to information, replies, messages, errors
         connect(model, SIGNAL(numConnectionsChanged(int)), this, SLOT(setNumConnections(int)));
-        connect(model, SIGNAL(numBlocksChanged(int,int)), this, SLOT(setNumBlocks(int,int)));
+        connect(model, SIGNAL(numBlocksChanged(int, int)), this, SLOT(setNumBlocks(int, int)));
 
         // Provide initial values
         ui->clientVersion->setText(model->formatFullVersion());
@@ -174,7 +174,7 @@ void RPCConsole::setClientModel(ClientModel *model)
 
 static QString categoryClass(int category)
 {
-    switch(category)
+    switch (category)
     {
     case RPCConsole::CMD_REQUEST:  return "cmd-request"; break;
     case RPCConsole::CMD_REPLY:    return "cmd-reply"; break;
@@ -191,23 +191,23 @@ void RPCConsole::clear()
 
     // Add smoothly scaled icon images.
     // (when using width/height on an img, Qt uses nearest instead of linear interpolation)
-    for(int i=0; ICON_MAPPING[i].url; ++i)
+    for (int i = 0; ICON_MAPPING[i].url; ++i)
     {
         ui->messagesWidget->document()->addResource(
-                    QTextDocument::ImageResource,
-                    QUrl(ICON_MAPPING[i].url),
-                    QImage(ICON_MAPPING[i].source).scaled(ICON_SIZE, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+            QTextDocument::ImageResource,
+            QUrl(ICON_MAPPING[i].url),
+            QImage(ICON_MAPPING[i].source).scaled(ICON_SIZE, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     }
 
     // Set default style sheet
     ui->messagesWidget->document()->setDefaultStyleSheet(
-                "table { }"
-                "td.time { color: #808080; padding-top: 3px; } "
-                "td.message { font-family: Monospace; font-size: 12px; } "
-                "td.cmd-request { color: #006060; } "
-                "td.cmd-error { color: red; } "
-                "b { color: #006060; } "
-                );
+        "table { }"
+        "td.time { color: #808080; padding-top: 3px; } "
+        "td.message { font-family: Monospace; font-size: 12px; } "
+        "td.cmd-request { color: #006060; } "
+        "td.cmd-error { color: red; } "
+        "b { color: #006060; } "
+    );
 
     message(CMD_REPLY, (tr("Welcome to the GoldCoin (GLD) RPC console.") + "<br>" +
                         tr("Use up and down arrows to navigate history, and <b>Ctrl-L</b> to clear screen.") + "<br>" +
@@ -222,7 +222,7 @@ void RPCConsole::message(int category, const QString &message, bool html)
     out += "<table><tr><td class=\"time\" width=\"65\">" + timeString + "</td>";
     out += "<td class=\"icon\" width=\"32\"><img src=\"" + categoryClass(category) + "\"></td>";
     out += "<td class=\"message " + categoryClass(category) + "\" valign=\"middle\">";
-    if(html)
+    if (html)
         out += message;
     else
         out += GUIUtil::HtmlEscape(message, true);
@@ -239,7 +239,7 @@ void RPCConsole::setNumBlocks(int count, int countOfPeers)
 {
     ui->numberOfBlocks->setText(QString::number(count));
     ui->totalBlocks->setText(QString::number(countOfPeers));
-    if(clientModel)
+    if (clientModel)
     {
         // If there is no current number available display N/A instead of 0, which can't ever be true
         ui->totalBlocks->setText(clientModel->getNumBlocksOfPeers() == 0 ? tr("N/A") : QString::number(clientModel->getNumBlocksOfPeers()));
@@ -252,7 +252,7 @@ void RPCConsole::on_lineEdit_returnPressed()
     QString cmd = ui->lineEdit->text();
     ui->lineEdit->clear();
 
-    if(!cmd.isEmpty())
+    if (!cmd.isEmpty())
     {
         message(CMD_REQUEST, cmd);
         emit cmdRequest(cmd);
@@ -261,7 +261,7 @@ void RPCConsole::on_lineEdit_returnPressed()
         // Append command to history
         history.append(cmd);
         // Enforce maximum history size
-        while(history.size() > CONSOLE_HISTORY)
+        while (history.size() > CONSOLE_HISTORY)
             history.removeFirst();
         // Set pointer to end of history
         historyPtr = history.size();
@@ -273,12 +273,12 @@ void RPCConsole::on_lineEdit_returnPressed()
 void RPCConsole::browseHistory(int offset)
 {
     historyPtr += offset;
-    if(historyPtr < 0)
+    if (historyPtr < 0)
         historyPtr = 0;
-    if(historyPtr > history.size())
+    if (historyPtr > history.size())
         historyPtr = history.size();
     QString cmd;
-    if(historyPtr < history.size())
+    if (historyPtr < history.size())
         cmd = history.at(historyPtr);
     ui->lineEdit->setText(cmd);
 }
@@ -292,7 +292,7 @@ void RPCConsole::startExecutor()
     // Notify executor when thread started (in executor thread)
     connect(thread, SIGNAL(started()), executor, SLOT(start()));
     // Replies from executor object must go to this object
-    connect(executor, SIGNAL(reply(int,QString)), this, SLOT(message(int,QString)));
+    connect(executor, SIGNAL(reply(int, QString)), this, SLOT(message(int, QString)));
     // Requests from this object must go to executor
     connect(this, SIGNAL(cmdRequest(QString)), executor, SLOT(request(QString)));
     // On stopExecutor signal
@@ -310,7 +310,7 @@ void RPCConsole::startExecutor()
 
 void RPCConsole::on_tabWidget_currentChanged(int index)
 {
-    if(ui->tabWidget->widget(index) == ui->tab_console)
+    if (ui->tabWidget->widget(index) == ui->tab_console)
     {
         ui->lineEdit->setFocus();
     }

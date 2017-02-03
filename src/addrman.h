@@ -214,7 +214,7 @@ protected:
     // This is the only place where actual deletes occur.
     // They are never deleted while in the "tried" table, only possibly evicted back to the "new" table.
     int ShrinkNew(int nUBucket);
- 
+
     // Move an entry from the "new" table(s) to the "tried" table
     // @pre vvUnkown[nOrigin].count(nId) != 0
     void MakeTried(CAddrInfo& info, int nId, int nOrigin);
@@ -381,12 +381,12 @@ public:
 
     CAddrMan() : vRandom(0), vvTried(ADDRMAN_TRIED_BUCKET_COUNT, std::vector<int>(0)), vvNew(ADDRMAN_NEW_BUCKET_COUNT, std::set<int>())
     {
-         nKey.resize(32);
-         RAND_bytes(&nKey[0], 32);
+        nKey.resize(32);
+        RAND_bytes(&nKey[0], 32);
 
-         nIdCount = 0;
-         nTried = 0;
-         nNew = 0;
+        nIdCount = 0;
+        nTried = 0;
+        nNew = 0;
     }
 
     // Return the number of (unique) addresses in all tables.
@@ -402,7 +402,7 @@ public:
         {
             LOCK(cs);
             int err;
-            if ((err=Check_()))
+            if ((err = Check_()))
                 printf("ADDRMAN CONSISTENCY CHECK FAILED!!! err=%i\n", err);
         }
 #endif

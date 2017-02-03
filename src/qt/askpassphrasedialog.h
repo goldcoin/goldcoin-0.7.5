@@ -4,7 +4,7 @@
 #include <QDialog>
 
 namespace Ui {
-    class AskPassphraseDialog;
+class AskPassphraseDialog;
 }
 
 class WalletModel;

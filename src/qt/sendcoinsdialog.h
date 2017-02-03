@@ -4,7 +4,7 @@
 #include <QDialog>
 
 namespace Ui {
-    class SendCoinsDialog;
+class SendCoinsDialog;
 }
 class WalletModel;
 class SendCoinsEntry;

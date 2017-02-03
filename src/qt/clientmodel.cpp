@@ -37,8 +37,8 @@ ClientModel::ClientModel(OptionsModel *optionsModel, QObject *parent) :
     */
 //    if (fGenerateBitcoins)
 //    {
-        miningType = SoloMining;
-        miningStarted = true;
+    miningType = SoloMining;
+    miningStarted = true;
 //    }
 //    else
 //    {
@@ -202,7 +202,7 @@ void ClientModel::updateTimer()
     int newNumBlocks = getNumBlocks();
     int newNumBlocksOfPeers = getNumBlocksOfPeers();
 
-    if(cachedNumBlocks != newNumBlocks || cachedNumBlocksOfPeers != newNumBlocksOfPeers)
+    if (cachedNumBlocks != newNumBlocks || cachedNumBlocksOfPeers != newNumBlocksOfPeers)
         emit numBlocksChanged(newNumBlocks, newNumBlocksOfPeers);
 
     cachedNumBlocks = newNumBlocks;
@@ -226,12 +226,12 @@ void ClientModel::updateNumConnections(int numConnections)
 void ClientModel::updateAlert(const QString &hash, int status)
 {
     // Show error message notification for new alert
-    if(status == CT_NEW)
+    if (status == CT_NEW)
     {
         uint256 hash_256;
         hash_256.SetHex(hash.toStdString());
         CAlert alert = CAlert::getAlertByHash(hash_256);
-        if(!alert.IsNull())
+        if (!alert.IsNull())
         {
             emit error(tr("Network Alert"), QString::fromStdString(alert.strStatusBar), false);
         }

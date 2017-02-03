@@ -31,7 +31,7 @@ MiningPage::MiningPage(QWidget *parent) :
     connect(ui->debugCheckBox, SIGNAL(toggled(bool)), this, SLOT(debugToggled(bool)));
     connect(minerProcess, SIGNAL(started()), this, SLOT(minerStarted()));
     connect(minerProcess, SIGNAL(error(QProcess::ProcessError)), this, SLOT(minerError(QProcess::ProcessError)));
-    connect(minerProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(minerFinished()));
+    connect(minerProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(minerFinished()));
     connect(minerProcess, SIGNAL(readyRead()), this, SLOT(readProcessOutput()));
 }
 
@@ -111,7 +111,7 @@ void MiningPage::startPoolMining()
 
     ui->mineSpeedLabel->setText("Speed: N/A");
     ui->shareCount->setText("Accepted: 0 - Rejected: 0");
-    minerProcess->start(program,args);
+    minerProcess->start(program, args);
     minerProcess->waitForStarted(-1);
 
     readTimer->start(500);
@@ -158,7 +158,7 @@ void MiningPage::readProcessOutput()
     {
         QStringList list = outputString.split("\n", QString::SkipEmptyParts);
         int i;
-        for (i=0; i<list.size(); i++)
+        for (i = 0; i < list.size(); i++)
         {
             QString line = list.at(i);
 
@@ -188,7 +188,7 @@ void MiningPage::readProcessOutput()
                 reportToList("Couldn't communicate with server. Retrying in 30 seconds.", ERROR, NULL);
             else if (line.contains("thread ") && line.contains("khash/s"))
             {
-                QString threadIDstr = line.at(line.indexOf("thread ")+7);
+                QString threadIDstr = line.at(line.indexOf("thread ") + 7);
                 int threadID = threadIDstr.toInt();
 
                 int threadSpeedindx = line.indexOf(",");
@@ -197,7 +197,7 @@ void MiningPage::readProcessOutput()
                 threadSpeedstr.remove(", ");
                 threadSpeedstr.remove(" ");
                 threadSpeedstr.remove('\n');
-                double speed=0;
+                double speed = 0;
                 speed = threadSpeedstr.toDouble();
 
                 threadSpeed[threadID] = speed;
@@ -242,11 +242,11 @@ void MiningPage::minerStarted()
 
 void MiningPage::updateSpeed()
 {
-    double totalSpeed=0;
-    int totalThreads=0;
+    double totalSpeed = 0;
+    int totalThreads = 0;
 
     QMapIterator<int, double> iter(threadSpeed);
-    while(iter.hasNext())
+    while (iter.hasNext())
     {
         iter.next();
         totalSpeed += iter.value();
@@ -256,7 +256,7 @@ void MiningPage::updateSpeed()
     // If all threads haven't reported the hash speed yet, make an assumption
     if (totalThreads != initThreads)
     {
-        totalSpeed = (totalSpeed/totalThreads)*initThreads;
+        totalSpeed = (totalSpeed / totalThreads) * initThreads;
     }
 
     QString speedString = QString("%1").arg(totalSpeed);
@@ -275,7 +275,7 @@ void MiningPage::updateSpeed()
 
     ui->shareCount->setText(QString("Accepted: %1 (%3) - Rejected: %2 (%4)").arg(acceptedString, rejectedString, roundAcceptedString, roundRejectedString));
 
-    model->setMining(getMiningType(), true, initThreads, totalSpeed*1000);
+    model->setMining(getMiningType(), true, initThreads, totalSpeed * 1000);
 }
 
 void MiningPage::reportToList(QString msg, int type, QString time)
@@ -286,27 +286,27 @@ void MiningPage::reportToList(QString msg, int type, QString time)
     else
         message = QString("[%1] - %2").arg(time, msg);
 
-    switch(type)
+    switch (type)
     {
-        case SHARE_SUCCESS:
-            acceptedShares++;
-            roundAcceptedShares++;
-            updateSpeed();
-            break;
+    case SHARE_SUCCESS:
+        acceptedShares++;
+        roundAcceptedShares++;
+        updateSpeed();
+        break;
 
-        case SHARE_FAIL:
-            rejectedShares++;
-            roundRejectedShares++;
-            updateSpeed();
-            break;
+    case SHARE_FAIL:
+        rejectedShares++;
+        roundRejectedShares++;
+        updateSpeed();
+        break;
 
-        case LONGPOLL:
-            roundAcceptedShares = 0;
-            roundRejectedShares = 0;
-            break;
+    case LONGPOLL:
+        roundAcceptedShares = 0;
+        roundRejectedShares = 0;
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     ui->list->addItem(message);
@@ -321,7 +321,7 @@ QString MiningPage::getTime(QString time)
         time.resize(21);
         time.remove("[");
         time.remove("]");
-        time.remove(0,11);
+        time.remove(0, 11);
 
         return time;
     }

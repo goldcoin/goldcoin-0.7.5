@@ -100,7 +100,7 @@ bool RecvLineIRC(SOCKET hSocket, string& strLine)
     }
 }
 
-int RecvUntil(SOCKET hSocket, const char* psz1, const char* psz2=NULL, const char* psz3=NULL, const char* psz4=NULL)
+int RecvUntil(SOCKET hSocket, const char* psz1, const char* psz2 = NULL, const char* psz3 = NULL, const char* psz4 = NULL)
 {
     loop
     {
@@ -173,7 +173,7 @@ bool GetIPFromIRC(SOCKET hSocket, string strMyName, CNetAddr& ipRet)
     string str = vWords[3];
     if (str.rfind("@") == string::npos)
         return false;
-    string strHost = str.substr(str.rfind("@")+1);
+    string strHost = str.substr(str.rfind("@") + 1);
 
     // Hybrid IRC used by lfnet always returns IP when you userhost yourself,
     // but in case another IRC is ever used this should work.
@@ -209,8 +209,8 @@ void ThreadIRCSeed(void* parg)
 
 void ThreadIRCSeed2(void* parg)
 {
-		return;//Disable IRC for now..
-	
+    return;//Disable IRC for now..
+
     /* Dont advertise on IRC if we don't allow incoming connections */
     if (mapArgs.count("-connect") || fNoListen)
         return;
@@ -228,18 +228,18 @@ void ThreadIRCSeed2(void* parg)
         SOCKET hSocket;
         if (!ConnectSocket(addrConnect, hSocket))
         {
-			addrConnect = CService("pelican.heliacal.net", 6667, true);
-			if (!ConnectSocket(addrConnect, hSocket))
-			{
-				printf("IRC connect failed\n");
-				nErrorWait = nErrorWait * 11 / 10;
-				if (Wait(nErrorWait += 60))
-					continue;
+            addrConnect = CService("pelican.heliacal.net", 6667, true);
+            if (!ConnectSocket(addrConnect, hSocket))
+            {
+                printf("IRC connect failed\n");
+                nErrorWait = nErrorWait * 11 / 10;
+                if (Wait(nErrorWait += 60))
+                    continue;
 
 
-				else
-					return;
-			}
+                else
+                    return;
+            }
         }
 
         if (!RecvUntil(hSocket, "Found your hostname", "using your IP address instead", "Couldn't look up your hostname", "ignoring hostname"))
@@ -296,7 +296,7 @@ void ThreadIRCSeed2(void* parg)
                 Send(hSocket, strprintf("NICK %s\r", strMyName.c_str()).c_str());
             }
         }
-        
+
         if (fTestNet) {
             Send(hSocket, "JOIN #gldcoinTEST3\r");
             Send(hSocket, "WHO #gldcoinTEST3\r");
@@ -385,7 +385,7 @@ void ThreadIRCSeed2(void* parg)
 int main(int argc, char *argv[])
 {
     WSADATA wsadata;
-    if (WSAStartup(MAKEWORD(2,2), &wsadata) != NO_ERROR)
+    if (WSAStartup(MAKEWORD(2, 2), &wsadata) != NO_ERROR)
     {
         printf("Error at WSAStartup()\n");
         return false;

@@ -8,7 +8,7 @@ class QModelIndex;
 QT_END_NAMESPACE
 
 namespace Ui {
-    class OverviewPage;
+class OverviewPage;
 }
 class WalletModel;
 class TxViewDelegate;

@@ -68,7 +68,7 @@ struct BlockSection
     int64 time;
     double timeDiff;
     double hashrate;
-}; 
+};
 
 Object JSONRPCError(int code, const string& message)
 {
@@ -86,7 +86,7 @@ void RPCTypeCheck(const Array& params,
         if (params.size() <= i)
             break;
 
-       const Value& v = params[i];
+        const Value& v = params[i];
         if (v.type() != t)
         {
             string err = strprintf("Expected type %s, got %s",
@@ -176,8 +176,8 @@ std::string
 HelpRequiringPassphrase()
 {
     return pwalletMain->IsCrypted()
-        ? "\nrequires wallet passphrase to be set with walletpassphrase first"
-        : "";
+           ? "\nrequires wallet passphrase to be set with walletpassphrase first"
+           : "";
 }
 
 void
@@ -198,8 +198,8 @@ void WalletTxToJSON(const CWalletTx& wtx, Object& entry)
     }
     entry.push_back(Pair("txid", wtx.GetHash().GetHex()));
     entry.push_back(Pair("time", (boost::int64_t)wtx.GetTxTime()));
-    BOOST_FOREACH(const PAIRTYPE(string,string)& item, wtx.mapValue)
-        entry.push_back(Pair(item.first, item.second));
+    BOOST_FOREACH(const PAIRTYPE(string, string)& item, wtx.mapValue)
+    entry.push_back(Pair(item.first, item.second));
 }
 
 string AccountFromValue(const Value& value)
@@ -247,8 +247,8 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex)
     result.push_back(Pair("version", block.nVersion));
     result.push_back(Pair("merkleroot", block.hashMerkleRoot.GetHex()));
     Array txs;
-    BOOST_FOREACH(const CTransaction&tx, block.vtx)
-        txs.push_back(tx.GetHash().GetHex());
+    BOOST_FOREACH(const CTransaction & tx, block.vtx)
+    txs.push_back(tx.GetHash().GetHex());
     result.push_back(Pair("tx", txs));
     result.push_back(Pair("time", (boost::int64_t)block.GetBlockTime()));
     result.push_back(Pair("nonce", (boost::uint64_t)block.nNonce));
@@ -296,7 +296,7 @@ string CRPCTable::help(string strCommand) const
     }
     if (strRet == "")
         strRet = strprintf("help: unknown command: %s\n", strCommand.c_str());
-    strRet = strRet.substr(0,strRet.size()-1);
+    strRet = strRet.substr(0, strRet.size() - 1);
     return strRet;
 }
 
@@ -350,8 +350,8 @@ Value getdifficulty(const Array& params, bool fHelp)
 
 //eric
 Value GetNetworkHashPS(int lookup) {
-	/*
-	// Litecoin: Return average network hashes per second based on last number of blocks.
+    /*
+    // Litecoin: Return average network hashes per second based on last number of blocks.
     if (pindexBest == NULL)
         return 0;
 
@@ -371,99 +371,99 @@ Value GetNetworkHashPS(int lookup) {
     double timePerBlock = timeDiff / lookup;
 
     return (boost::int64_t)(((double)GetDifficulty() * pow(2.0, 32)) / timePerBlock);*/
-	//GoldCoin: return average network hashes per second based on last number of blocks, taking difficulty into account
-	if (pindexBest == NULL)
-    return 0;
-  
+    //GoldCoin: return average network hashes per second based on last number of blocks, taking difficulty into account
+    if (pindexBest == NULL)
+        return 0;
+
     printf("GetNetworkHashPS(%d)\n", lookup);
-  
+
     // If lookup is -1, then use blocks since last difficulty change.
     if (lookup <= 0)
         lookup = pindexBest->nHeight % 60 + 1;
-  
+
     // If lookup is larger than chain, then set it to chain length.
     if (lookup > pindexBest->nHeight)
         lookup = pindexBest->nHeight;
-  
+
     if (lookup > (pindexBest->nHeight - julyFork))
         lookup = pindexBest->nHeight - julyFork;
-  
-    int sectionCount = (lookup / 60)+3;
+
+    int sectionCount = (lookup / 60) + 3;
     int currentSection = 0;
     BlockSection * sections = new BlockSection[sectionCount];
-  
+
     //setup the first section
     sections[0].height = pindexBest->nHeight;
     sections[0].difficulty = GetDifficulty(pindexBest);
     sections[0].hashrate = 0;
     sections[0].time = pindexBest->nTime;
     sections[0].timeDiff = 0;
-  
+
     CBlockIndex* pindexPrev = pindexBest;
-  
+
     printf("GetTrueNetworkHashPS(%d) - modified lookup\n", lookup);
     printf(" best index = %d\n difficulty = %f\n", pindexBest->nHeight, sections[0].difficulty);
-  
-  
+
+
     for (int i = 0; i < lookup; i++)
     {
-        if((pindexPrev->nHeight % 60) == 0)
+        if ((pindexPrev->nHeight % 60) == 0)
         {
-  
+
             pindexPrev = pindexPrev->pprev;
             ++currentSection;
             sections[currentSection].height = pindexPrev->nHeight;
             sections[currentSection].difficulty = GetDifficulty(pindexPrev);
             sections[currentSection].hashrate = 0;
             sections[currentSection].time = pindexPrev->nTime;
-  
-            sections[currentSection-1].timeDiff = sections[currentSection-1].time - sections[currentSection].time;
-            sections[currentSection-1].hashrate = (sections[currentSection-1].difficulty * pow(2.0, 32)) / (sections[currentSection-1].timeDiff / (sections[currentSection-1].height - sections[currentSection].height));
-            printf(" hashrate for section: %f MH/s, time diff = %d min\n", sections[currentSection-1].hashrate/1000000, sections[currentSection-1].timeDiff/60);
-            printf(" ====difficulty change at block %d\n", pindexPrev->nHeight+1);
+
+            sections[currentSection - 1].timeDiff = sections[currentSection - 1].time - sections[currentSection].time;
+            sections[currentSection - 1].hashrate = (sections[currentSection - 1].difficulty * pow(2.0, 32)) / (sections[currentSection - 1].timeDiff / (sections[currentSection - 1].height - sections[currentSection].height));
+            printf(" hashrate for section: %f MH/s, time diff = %d min\n", sections[currentSection - 1].hashrate / 1000000, sections[currentSection - 1].timeDiff / 60);
+            printf(" ====difficulty change at block %d\n", pindexPrev->nHeight + 1);
             printf(" height = %d, difficulty = %f\n", sections[currentSection].height, sections[currentSection].difficulty);
         }
-  
+
         else pindexPrev = pindexPrev->pprev;
     }
-  
+
     //setup end section
     CBlockIndex * pindexLast = pindexPrev;//->pprev;
-  
+
     ++currentSection;
     sections[currentSection].height = pindexLast->nHeight;
     sections[currentSection].difficulty = GetDifficulty(pindexLast);
     sections[currentSection].hashrate = 0;
     sections[currentSection].time = pindexLast->nTime;
     sections[currentSection].timeDiff = -1;
-  
-    sections[currentSection-1].timeDiff = sections[currentSection-1].time - sections[currentSection].time;
-    if(sections[currentSection-1].height != sections[currentSection].height)
-        sections[currentSection-1].hashrate = (sections[currentSection-1].difficulty * pow(2.0, 32)) / (sections[currentSection-1].timeDiff / (sections[currentSection-1].height - sections[currentSection].height));
-    else sections[currentSection-1].hashrate = 0;
-  
-  
+
+    sections[currentSection - 1].timeDiff = sections[currentSection - 1].time - sections[currentSection].time;
+    if (sections[currentSection - 1].height != sections[currentSection].height)
+        sections[currentSection - 1].hashrate = (sections[currentSection - 1].difficulty * pow(2.0, 32)) / (sections[currentSection - 1].timeDiff / (sections[currentSection - 1].height - sections[currentSection].height));
+    else sections[currentSection - 1].hashrate = 0;
+
+
     int64 result = 0.0;
-  
+
     double sumHashXtimeDiff = 0.0;
-  
+
     double timeDiff = pindexBest->GetBlockTime() - pindexPrev->GetBlockTime();
-  
-    for(int i = 0; i < (sectionCount-1); ++i)
+
+    for (int i = 0; i < (sectionCount - 1); ++i)
     {
         sumHashXtimeDiff += sections[i].hashrate * sections[i].timeDiff;
     }
-  
+
     //double timeDiff = pindexBest->GetBlockTime() - pindexPrev->GetBlockTime();
     //double timePerBlock = timeDiff / lookup;
-  
+
     //   return /*(boost::int64_t)*/(((double)GetDifficulty() * pow(2.0, 32)) / timePerBlock);
-  
+
     result = (int64)(sumHashXtimeDiff / timeDiff);
-    printf("returning hashrate %f MH/s, lookup %d (time difference = %.1f)\n", result/1000000, lookup, timeDiff/60);
+    printf("returning hashrate %f MH/s, lookup %d (time difference = %.1f)\n", result / 1000000, lookup, timeDiff / 60);
     delete [] sections;
-    return (boost::int64_t)result; 
-	
+    return (boost::int64_t)result;
+
 }
 
 Value getnetworkhashps(const Array& params, bool fHelp)
@@ -549,7 +549,7 @@ Value getinfo(const Array& params, bool fHelp)
 
     Object obj;
     obj.push_back(Pair("version",       (int)CLIENT_VERSION));
-    obj.push_back(Pair("protocolversion",(int)PROTOCOL_VERSION));
+    obj.push_back(Pair("protocolversion", (int)PROTOCOL_VERSION));
     obj.push_back(Pair("walletversion", pwalletMain->GetVersion()));
     obj.push_back(Pair("balance",       ValueFromAmount(pwalletMain->GetBalance())));
     obj.push_back(Pair("blocks",        (int)nBestHeight));
@@ -577,8 +577,8 @@ Value getmininginfo(const Array& params, bool fHelp)
 
     Object obj;
     obj.push_back(Pair("blocks",        (int)nBestHeight));
-    obj.push_back(Pair("currentblocksize",(uint64_t)nLastBlockSize));
-    obj.push_back(Pair("currentblocktx",(uint64_t)nLastBlockTx));
+    obj.push_back(Pair("currentblocksize", (uint64_t)nLastBlockSize));
+    obj.push_back(Pair("currentblocktx", (uint64_t)nLastBlockTx));
     obj.push_back(Pair("difficulty",    (double)GetDifficulty()));
     obj.push_back(Pair("errors",        GetWarnings("statusbar")));
     obj.push_back(Pair("generate",      GetBoolArg("-gen")));
@@ -620,7 +620,7 @@ Value getnewaddress(const Array& params, bool fHelp)
 }
 
 
-CBitcoinAddress GetAccountAddress(string strAccount, bool bForceNew=false)
+CBitcoinAddress GetAccountAddress(string strAccount, bool bForceNew = false)
 {
     CWalletDB walletdb(pwalletMain->strWalletFile);
 
@@ -635,13 +635,13 @@ CBitcoinAddress GetAccountAddress(string strAccount, bool bForceNew=false)
         CScript scriptPubKey;
         scriptPubKey.SetDestination(account.vchPubKey.GetID());
         for (map<uint256, CWalletTx>::iterator it = pwalletMain->mapWallet.begin();
-             it != pwalletMain->mapWallet.end() && account.vchPubKey.IsValid();
-             ++it)
+                it != pwalletMain->mapWallet.end() && account.vchPubKey.IsValid();
+                ++it)
         {
             const CWalletTx& wtx = (*it).second;
-            BOOST_FOREACH(const CTxOut& txout, wtx.vout)
-                if (txout.scriptPubKey == scriptPubKey)
-                    bKeyUsed = true;
+            BOOST_FOREACH(const CTxOut & txout, wtx.vout)
+            if (txout.scriptPubKey == scriptPubKey)
+                bKeyUsed = true;
         }
     }
 
@@ -896,7 +896,7 @@ Value getreceivedbyaddress(const Array& params, bool fHelp)
     if (!address.IsValid())
         throw JSONRPCError(-5, "Invalid GoldCoin (GLD) address");
     scriptPubKey.SetDestination(address.Get());
-    if (!IsMine(*pwalletMain,scriptPubKey))
+    if (!IsMine(*pwalletMain, scriptPubKey))
         return (double)0.0;
 
     // Minimum confirmations
@@ -912,10 +912,10 @@ Value getreceivedbyaddress(const Array& params, bool fHelp)
         if (wtx.IsCoinBase() || !wtx.IsFinal())
             continue;
 
-        BOOST_FOREACH(const CTxOut& txout, wtx.vout)
-            if (txout.scriptPubKey == scriptPubKey)
-                if (wtx.GetDepthInMainChain() >= nMinDepth)
-                    nAmount += txout.nValue;
+        BOOST_FOREACH(const CTxOut & txout, wtx.vout)
+        if (txout.scriptPubKey == scriptPubKey)
+            if (wtx.GetDepthInMainChain() >= nMinDepth)
+                nAmount += txout.nValue;
     }
 
     return  ValueFromAmount(nAmount);
@@ -958,7 +958,7 @@ Value getreceivedbyaccount(const Array& params, bool fHelp)
         if (wtx.IsCoinBase() || !wtx.IsFinal())
             continue;
 
-        BOOST_FOREACH(const CTxOut& txout, wtx.vout)
+        BOOST_FOREACH(const CTxOut & txout, wtx.vout)
         {
             CTxDestination address;
             if (ExtractDestination(txout.scriptPubKey, address) && IsMine(*pwalletMain, address) && setAddress.count(address))
@@ -1037,11 +1037,11 @@ Value getbalance(const Array& params, bool fHelp)
             wtx.GetAmounts(allGeneratedImmature, allGeneratedMature, listReceived, listSent, allFee, strSentAccount);
             if (wtx.GetDepthInMainChain() >= nMinDepth)
             {
-                BOOST_FOREACH(const PAIRTYPE(CTxDestination,int64)& r, listReceived)
-                    nBalance += r.second;
+                BOOST_FOREACH(const PAIRTYPE(CTxDestination, int64)& r, listReceived)
+                nBalance += r.second;
             }
-            BOOST_FOREACH(const PAIRTYPE(CTxDestination,int64)& r, listSent)
-                nBalance -= r.second;
+            BOOST_FOREACH(const PAIRTYPE(CTxDestination, int64)& r, listSent)
+            nBalance -= r.second;
             nBalance -= allFee;
             nBalance += allGeneratedMature;
         }
@@ -1167,14 +1167,14 @@ Value sendmany(const Array& params, bool fHelp)
     vector<pair<CScript, int64> > vecSend;
 
     int64 totalAmount = 0;
-    BOOST_FOREACH(const Pair& s, sendTo)
+    BOOST_FOREACH(const Pair & s, sendTo)
     {
         CBitcoinAddress address(s.name_);
         if (!address.IsValid())
-            throw JSONRPCError(-5, string("Invalid GoldCoin (GLD) address:")+s.name_);
+            throw JSONRPCError(-5, string("Invalid GoldCoin (GLD) address:") + s.name_);
 
         if (setAddress.count(address))
-            throw JSONRPCError(-8, string("Invalid parameter, duplicated address: ")+s.name_);
+            throw JSONRPCError(-8, string("Invalid parameter, duplicated address: ") + s.name_);
         setAddress.insert(address);
 
         CScript scriptPubKey;
@@ -1213,9 +1213,9 @@ Value addmultisigaddress(const Array& params, bool fHelp)
     if (fHelp || params.size() < 2 || params.size() > 3)
     {
         string msg = "addmultisigaddress <nrequired> <'[\"key\",\"key\"]'> [account]\n"
-            "Add a nrequired-to-sign multisignature address to the wallet\"\n"
-            "each key is a GoldCoin (GLD) address or hex-encoded public key\n"
-            "If [account] is specified, assign address to [account].";
+                     "Add a nrequired-to-sign multisignature address to the wallet\"\n"
+                     "each key is a GoldCoin (GLD) address or hex-encoded public key\n"
+                     "If [account] is specified, assign address to [account].";
         throw runtime_error(msg);
     }
 
@@ -1245,13 +1245,13 @@ Value addmultisigaddress(const Array& params, bool fHelp)
             CKeyID keyID;
             if (!address.GetKeyID(keyID))
                 throw runtime_error(
-                    strprintf("%s does not refer to a key",ks.c_str()));
+                    strprintf("%s does not refer to a key", ks.c_str()));
             CPubKey vchPubKey;
             if (!pwalletMain->GetPubKey(keyID, vchPubKey))
                 throw runtime_error(
-                    strprintf("no full public key for address %s",ks.c_str()));
+                    strprintf("no full public key for address %s", ks.c_str()));
             if (!vchPubKey.IsValid() || !pubkeys[i].SetPubKey(vchPubKey))
-                throw runtime_error(" Invalid public key: "+ks);
+                throw runtime_error(" Invalid public key: " + ks);
         }
 
         // Case 2: hex public key
@@ -1259,11 +1259,11 @@ Value addmultisigaddress(const Array& params, bool fHelp)
         {
             CPubKey vchPubKey(ParseHex(ks));
             if (!vchPubKey.IsValid() || !pubkeys[i].SetPubKey(vchPubKey))
-                throw runtime_error(" Invalid public key: "+ks);
+                throw runtime_error(" Invalid public key: " + ks);
         }
         else
         {
-            throw runtime_error(" Invalid public key: "+ks);
+            throw runtime_error(" Invalid public key: " + ks);
         }
     }
 
@@ -1314,7 +1314,7 @@ Value ListReceived(const Array& params, bool fByAccounts)
         if (nDepth < nMinDepth)
             continue;
 
-        BOOST_FOREACH(const CTxOut& txout, wtx.vout)
+        BOOST_FOREACH(const CTxOut & txout, wtx.vout)
         {
             CTxDestination address;
             if (!ExtractDestination(txout.scriptPubKey, address) || !IsMine(*pwalletMain, address))
@@ -1422,7 +1422,7 @@ void ListTransactions(const CWalletTx& wtx, const string& strAccount, int nMinDe
     bool fAllAccounts = (strAccount == string("*"));
 
     // Generated blocks assigned to account ""
-    if ((nGeneratedMature+nGeneratedImmature) != 0 && (fAllAccounts || strAccount == ""))
+    if ((nGeneratedMature + nGeneratedImmature) != 0 && (fAllAccounts || strAccount == ""))
     {
         Object entry;
         entry.push_back(Pair("account", string("")));
@@ -1537,7 +1537,7 @@ Value listtransactions(const Array& params, bool fHelp)
     }
     list<CAccountingEntry> acentries;
     walletdb.ListAccountCreditDebit(strAccount, acentries);
-    BOOST_FOREACH(CAccountingEntry& entry, acentries)
+    BOOST_FOREACH(CAccountingEntry & entry, acentries)
     {
         txByTime.insert(make_pair(entry.nTime, TxPair((CWalletTx*)0, &entry)));
     }
@@ -1552,7 +1552,7 @@ Value listtransactions(const Array& params, bool fHelp)
         if (pacentry != 0)
             AcentryToJSON(*pacentry, strAccount, ret);
 
-        if ((int)ret.size() >= (nCount+nFrom)) break;
+        if ((int)ret.size() >= (nCount + nFrom)) break;
     }
     // ret is newest to oldest
 
@@ -1563,7 +1563,7 @@ Value listtransactions(const Array& params, bool fHelp)
     Array::iterator first = ret.begin();
     std::advance(first, nFrom);
     Array::iterator last = ret.begin();
-    std::advance(last, nFrom+nCount);
+    std::advance(last, nFrom + nCount);
 
     if (last != ret.end()) ret.erase(last, ret.end());
     if (first != ret.begin()) ret.erase(ret.begin(), first);
@@ -1600,22 +1600,22 @@ Value listaccounts(const Array& params, bool fHelp)
         wtx.GetAmounts(nGeneratedImmature, nGeneratedMature, listReceived, listSent, nFee, strSentAccount);
         mapAccountBalances[strSentAccount] -= nFee;
         BOOST_FOREACH(const PAIRTYPE(CTxDestination, int64)& s, listSent)
-            mapAccountBalances[strSentAccount] -= s.second;
+        mapAccountBalances[strSentAccount] -= s.second;
         if (wtx.GetDepthInMainChain() >= nMinDepth)
         {
             mapAccountBalances[""] += nGeneratedMature;
             BOOST_FOREACH(const PAIRTYPE(CTxDestination, int64)& r, listReceived)
-                if (pwalletMain->mapAddressBook.count(r.first))
-                    mapAccountBalances[pwalletMain->mapAddressBook[r.first]] += r.second;
-                else
-                    mapAccountBalances[""] += r.second;
+            if (pwalletMain->mapAddressBook.count(r.first))
+                mapAccountBalances[pwalletMain->mapAddressBook[r.first]] += r.second;
+            else
+                mapAccountBalances[""] += r.second;
         }
     }
 
     list<CAccountingEntry> acentries;
     CWalletDB(pwalletMain->strWalletFile).ListAccountCreditDebit("*", acentries);
-    BOOST_FOREACH(const CAccountingEntry& entry, acentries)
-        mapAccountBalances[entry.strAccount] += entry.nCreditDebit;
+    BOOST_FOREACH(const CAccountingEntry & entry, acentries)
+    mapAccountBalances[entry.strAccount] += entry.nCreditDebit;
 
     Object ret;
     BOOST_FOREACH(const PAIRTYPE(string, int64)& accountBalance, mapAccountBalances) {
@@ -1674,8 +1674,8 @@ Value listsinceblock(const Array& params, bool fHelp)
 
         CBlockIndex *block;
         for (block = pindexBest;
-             block && block->nHeight > target_height;
-             block = block->pprev)  { }
+                block && block->nHeight > target_height;
+                block = block->pprev)  { }
 
         lastblock = block ? block->GetBlockHash() : 0;
     }
@@ -1777,7 +1777,7 @@ void ThreadCleanWalletPassphrase(void* parg)
 
         do
         {
-            if (nWalletUnlockTime==0)
+            if (nWalletUnlockTime == 0)
                 break;
             int64 nToSleep = nWalletUnlockTime - GetTimeMillis();
             if (nToSleep <= 0)
@@ -1787,7 +1787,7 @@ void ThreadCleanWalletPassphrase(void* parg)
             Sleep(nToSleep);
             ENTER_CRITICAL_SECTION(cs_nWalletUnlockTime);
 
-        } while(1);
+        } while (1);
 
         if (nWalletUnlockTime)
         {
@@ -1959,8 +1959,8 @@ public:
         ExtractDestinations(subscript, whichType, addresses, nRequired);
         obj.push_back(Pair("script", GetTxnOutputType(whichType)));
         Array a;
-        BOOST_FOREACH(const CTxDestination& addr, addresses)
-            a.push_back(CBitcoinAddress(addr).ToString());
+        BOOST_FOREACH(const CTxDestination & addr, addresses)
+        a.push_back(CBitcoinAddress(addr).ToString());
         obj.push_back(Pair("addresses", a));
         if (whichType == TX_MULTISIG)
             obj.push_back(Pair("sigsrequired", nRequired));
@@ -2024,14 +2024,14 @@ Value getworkex(const Array& params, bool fHelp)
         static int64 nStart;
         static CBlock* pblock;
         if (pindexPrev != pindexBest ||
-            (nTransactionsUpdated != nTransactionsUpdatedLast && GetTime() - nStart > 60))
+                (nTransactionsUpdated != nTransactionsUpdatedLast && GetTime() - nStart > 60))
         {
             if (pindexPrev != pindexBest)
             {
                 // Deallocate old blocks since they're obsolete now
                 mapNewBlock.clear();
-                BOOST_FOREACH(CBlock* pblock, vNewBlock)
-                    delete pblock;
+                BOOST_FOREACH(CBlock * pblock, vNewBlock)
+                delete pblock;
                 vNewBlock.clear();
             }
             nTransactionsUpdatedLast = nTransactionsUpdated;
@@ -2094,7 +2094,7 @@ Value getworkex(const Array& params, bool fHelp)
         vector<unsigned char> vchData = ParseHex(params[0].get_str());
         vector<unsigned char> coinbase;
 
-        if(params.size() == 2)
+        if (params.size() == 2)
             coinbase = ParseHex(params[1].get_str());
 
         if (vchData.size() != 128)
@@ -2103,7 +2103,7 @@ Value getworkex(const Array& params, bool fHelp)
         CBlock* pdata = (CBlock*)&vchData[0];
 
         // Byte reverse
-        for (int i = 0; i < 128/4; i++)
+        for (int i = 0; i < 128 / 4; i++)
             ((unsigned int*)pdata)[i] = ByteReverse(((unsigned int*)pdata)[i]);
 
         // Get saved block
@@ -2114,7 +2114,7 @@ Value getworkex(const Array& params, bool fHelp)
         pblock->nTime = pdata->nTime;
         pblock->nNonce = pdata->nNonce;
 
-        if(coinbase.size() == 0)
+        if (coinbase.size() == 0)
             pblock->vtx[0].vin[0].scriptSig = mapNewBlock[pdata->hashMerkleRoot].second;
         else
             CDataStream(coinbase, SER_NETWORK, PROTOCOL_VERSION) >> pblock->vtx[0]; // FIXME - HACK!
@@ -2156,14 +2156,14 @@ Value getwork(const Array& params, bool fHelp)
         static int64 nStart;
         static CBlock* pblock;
         if (pindexPrev != pindexBest ||
-            (nTransactionsUpdated != nTransactionsUpdatedLast && GetTime() - nStart > 60))
+                (nTransactionsUpdated != nTransactionsUpdatedLast && GetTime() - nStart > 60))
         {
             if (pindexPrev != pindexBest)
             {
                 // Deallocate old blocks since they're obsolete now
                 mapNewBlock.clear();
-                BOOST_FOREACH(CBlock* pblock, vNewBlock)
-                    delete pblock;
+                BOOST_FOREACH(CBlock * pblock, vNewBlock)
+                delete pblock;
                 vNewBlock.clear();
             }
             nTransactionsUpdatedLast = nTransactionsUpdated;
@@ -2213,7 +2213,7 @@ Value getwork(const Array& params, bool fHelp)
         CBlock* pdata = (CBlock*)&vchData[0];
 
         // Byte reverse
-        for (int i = 0; i < 128/4; i++)
+        for (int i = 0; i < 128 / 4; i++)
             ((unsigned int*)pdata)[i] = ByteReverse(((unsigned int*)pdata)[i]);
 
         // Get saved block
@@ -2259,8 +2259,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
         const Value& modeval = find_value(oparam, "mode");
         if (modeval.type() == str_type)
             strMode = modeval.get_str();
-        else
-        if (find_value(oparam, "data").type() == null_type)
+        else if (find_value(oparam, "data").type() == null_type)
             strMode = "template";
         else
             strMode = "submit";
@@ -2282,14 +2281,14 @@ Value getblocktemplate(const Array& params, bool fHelp)
         static int64 nStart;
         static CBlock* pblock;
         if (pindexPrev != pindexBest ||
-            (nTransactionsUpdated != nTransactionsUpdatedLast && GetTime() - nStart > 5))
+                (nTransactionsUpdated != nTransactionsUpdatedLast && GetTime() - nStart > 5))
         {
             nTransactionsUpdatedLast = nTransactionsUpdated;
             pindexPrev = pindexBest;
             nStart = GetTime();
 
             // Create new block
-            if(pblock)
+            if (pblock)
                 delete pblock;
             pblock = CreateNewBlock(reservekey);
             if (!pblock)
@@ -2304,7 +2303,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
         map<uint256, int64_t> setTxIndex;
         int i = 0;
         CTxDB txdb("r");
-        BOOST_FOREACH (CTransaction& tx, pblock->vtx)
+        BOOST_FOREACH (CTransaction & tx, pblock->vtx)
         {
             uint256 txHash = tx.GetHash();
             setTxIndex[txHash] = i++;
@@ -2328,7 +2327,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
                 entry.push_back(Pair("fee", (int64_t)(tx.GetValueIn(mapInputs) - tx.GetValueOut())));
 
                 Array deps;
-                BOOST_FOREACH (MapPrevTx::value_type& inp, mapInputs)
+                BOOST_FOREACH (MapPrevTx::value_type & inp, mapInputs)
                 {
                     if (setTxIndex.count(inp.first))
                         deps.push_back(setTxIndex[inp.first]);
@@ -2363,9 +2362,9 @@ Value getblocktemplate(const Array& params, bool fHelp)
         result.push_back(Pair("coinbaseaux", aux));
         result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].vout[0].nValue));
         result.push_back(Pair("target", hashTarget.GetHex()));
-		//We have to set mintime such that we don't bother working on a block that will just end up being rejected by the 51% defence anyhow
-		//Also we want to eliminate any advantage that solving a block with a faketimestamp set 45 seconds in the future may have
-		//To do this we will first call a function that will give us the next mintime taking the 51% defence into consideration..
+        //We have to set mintime such that we don't bother working on a block that will just end up being rejected by the 51% defence anyhow
+        //Also we want to eliminate any advantage that solving a block with a faketimestamp set 45 seconds in the future may have
+        //To do this we will first call a function that will give us the next mintime taking the 51% defence into consideration..
         result.push_back(Pair("mintime", (int64_t)getNextMinTime(pindexPrev)));
         result.push_back(Pair("mutable", aMutable));
         result.push_back(Pair("noncerange", "00000000ffffffff"));
@@ -2373,12 +2372,11 @@ Value getblocktemplate(const Array& params, bool fHelp)
         result.push_back(Pair("sizelimit", (int64_t)MAX_BLOCK_SIZE));
         result.push_back(Pair("curtime", (int64_t)pblock->nTime));
         result.push_back(Pair("bits", HexBits(pblock->nBits)));
-        result.push_back(Pair("height", (int64_t)(pindexPrev->nHeight+1)));
+        result.push_back(Pair("height", (int64_t)(pindexPrev->nHeight + 1)));
 
         return result;
     }
-    else
-    if (strMode == "submit")
+    else if (strMode == "submit")
     {
         // Parse parameters
         CDataStream ssBlock(ParseHex(find_value(oparam, "data").get_str()), SER_NETWORK, PROTOCOL_VERSION);
@@ -2404,8 +2402,8 @@ Value getrawmempool(const Array& params, bool fHelp)
     mempool.queryHashes(vtxid);
 
     Array a;
-    BOOST_FOREACH(const uint256& hash, vtxid)
-        a.push_back(hash.ToString());
+    BOOST_FOREACH(const uint256 & hash, vtxid)
+    a.push_back(hash.ToString());
 
     return a;
 }
@@ -2485,7 +2483,7 @@ Value getblockbyheight(const Array& params, bool fHelp)
 
 
 
-// ppcoin: send alert.  
+// ppcoin: send alert.
 // There is a known deadlock situation with ThreadMessageHandler
 // ThreadMessageHandler: holds cs_vSend and acquiring cs_main in SendMessages()
 // ThreadRPCServer: holds cs_main and acquiring cs_vSend in alert.RelayTo()/PushMessage()/BeginMessage()
@@ -2514,26 +2512,26 @@ Value sendalert(const Array& params, bool fHelp)
     if (params.size() > 6)
         alert.nCancel = params[6].get_int();
     alert.nVersion = PROTOCOL_VERSION;
-    alert.nRelayUntil = GetAdjustedTime() + 365*24*60*60;
-    alert.nExpiration = GetAdjustedTime() + 365*24*60*60;
+    alert.nRelayUntil = GetAdjustedTime() + 365 * 24 * 60 * 60;
+    alert.nExpiration = GetAdjustedTime() + 365 * 24 * 60 * 60;
 
     CDataStream sMsg(SER_NETWORK, PROTOCOL_VERSION);
     sMsg << (CUnsignedAlert)alert;
     alert.vchMsg = vector<unsigned char>(sMsg.begin(), sMsg.end());
-    
+
     vector<unsigned char> vchPrivKey = ParseHex(params[1].get_str());
     key.SetPrivKey(CPrivKey(vchPrivKey.begin(), vchPrivKey.end())); // if key is not correct openssl may crash
     if (!key.Sign(Hash(alert.vchMsg.begin(), alert.vchMsg.end()), alert.vchSig))
         throw runtime_error(
-            "Unable to sign alert, check private key?\n");  
-    if(!alert.ProcessAlert()) 
+            "Unable to sign alert, check private key?\n");
+    if (!alert.ProcessAlert())
         throw runtime_error(
             "Failed to process alert.\n");
     // Relay alert
     {
         LOCK(cs_vNodes);
-        BOOST_FOREACH(CNode* pnode, vNodes)
-            alert.RelayTo(pnode);
+        BOOST_FOREACH(CNode * pnode, vNodes)
+        alert.RelayTo(pnode);
     }
 
     Object result;
@@ -2557,8 +2555,8 @@ Value sendalert(const Array& params, bool fHelp)
 
 
 static const CRPCCommand vRPCCommands[] =
-{ //  name                      function                 safe mode?
-  //  ------------------------  -----------------------  ----------
+{   //  name                      function                 safe mode?
+    //  ------------------------  -----------------------  ----------
     { "help",                   &help,                   true },
     { "stop",                   &stop,                   true },
     { "getblockcount",          &getblockcount,          true },
@@ -2566,7 +2564,7 @@ static const CRPCCommand vRPCCommands[] =
     { "getpeerinfo",            &getpeerinfo,            true },
     { "getdifficulty",          &getdifficulty,          true },
     { "getnetworkhashps",       &getnetworkhashps,       true },
-	{ "sendalert",				&sendalert,				 false },
+    { "sendalert",              &sendalert,              false },
     { "getgenerate",            &getgenerate,            true },
     { "setgenerate",            &setgenerate,            true },
     { "gethashespersec",        &gethashespersec,        true },
@@ -2597,7 +2595,7 @@ static const CRPCCommand vRPCCommands[] =
     { "getrawmempool",          &getrawmempool,          true },
     { "getblock",               &getblock,               false },
     { "getblockhash",           &getblockhash,           false },
-	{ "getblockbyheight",       &getblockbyheight,		 false },
+    { "getblockbyheight",       &getblockbyheight,       false },
     { "gettransaction",         &gettransaction,         false },
     { "listtransactions",       &listtransactions,       false },
     { "signmessage",            &signmessage,            false },
@@ -2646,7 +2644,7 @@ const CRPCCommand *CRPCTable::operator[](string name) const
 // and to be compatible with other JSON-RPC implementations.
 //
 
-string HTTPPost(const string& strMsg, const map<string,string>& mapRequestHeaders)
+string HTTPPost(const string& strMsg, const map<string, string>& mapRequestHeaders)
 {
     ostringstream s;
     s << "POST / HTTP/1.1\r\n"
@@ -2657,7 +2655,7 @@ string HTTPPost(const string& strMsg, const map<string,string>& mapRequestHeader
       << "Connection: close\r\n"
       << "Accept: application/json\r\n";
     BOOST_FOREACH(const PAIRTYPE(string, string)& item, mapRequestHeaders)
-        s << item.first << ": " << item.second << "\r\n";
+    s << item.first << ": " << item.second << "\r\n";
     s << "\r\n" << strMsg;
 
     return s.str();
@@ -2680,44 +2678,44 @@ static string HTTPReply(int nStatus, const string& strMsg, bool keepalive)
 {
     if (nStatus == 401)
         return strprintf("HTTP/1.0 401 Authorization Required\r\n"
-            "Date: %s\r\n"
-            "Server: goldcoin-json-rpc/%s\r\n"
-            "WWW-Authenticate: Basic realm=\"jsonrpc\"\r\n"
-            "Content-Type: text/html\r\n"
-            "Content-Length: 296\r\n"
-            "\r\n"
-            "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\r\n"
-            "\"http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd\">\r\n"
-            "<HTML>\r\n"
-            "<HEAD>\r\n"
-            "<TITLE>Error</TITLE>\r\n"
-            "<META HTTP-EQUIV='Content-Type' CONTENT='text/html; charset=ISO-8859-1'>\r\n"
-            "</HEAD>\r\n"
-            "<BODY><H1>401 Unauthorized.</H1></BODY>\r\n"
-            "</HTML>\r\n", rfc1123Time().c_str(), FormatFullVersion().c_str());
+                         "Date: %s\r\n"
+                         "Server: goldcoin-json-rpc/%s\r\n"
+                         "WWW-Authenticate: Basic realm=\"jsonrpc\"\r\n"
+                         "Content-Type: text/html\r\n"
+                         "Content-Length: 296\r\n"
+                         "\r\n"
+                         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\r\n"
+                         "\"http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd\">\r\n"
+                         "<HTML>\r\n"
+                         "<HEAD>\r\n"
+                         "<TITLE>Error</TITLE>\r\n"
+                         "<META HTTP-EQUIV='Content-Type' CONTENT='text/html; charset=ISO-8859-1'>\r\n"
+                         "</HEAD>\r\n"
+                         "<BODY><H1>401 Unauthorized.</H1></BODY>\r\n"
+                         "</HTML>\r\n", rfc1123Time().c_str(), FormatFullVersion().c_str());
     const char *cStatus;
-         if (nStatus == 200) cStatus = "OK";
+    if (nStatus == 200) cStatus = "OK";
     else if (nStatus == 400) cStatus = "Bad Request";
     else if (nStatus == 403) cStatus = "Forbidden";
     else if (nStatus == 404) cStatus = "Not Found";
     else if (nStatus == 500) cStatus = "Internal Server Error";
     else cStatus = "";
     return strprintf(
-            "HTTP/1.1 %d %s\r\n"
-            "Date: %s\r\n"
-            "Connection: %s\r\n"
-            "Content-Length: %d\r\n"
-            "Content-Type: application/json\r\n"
-            "Server: goldcoin-json-rpc/%s\r\n"
-            "\r\n"
-            "%s",
-        nStatus,
-        cStatus,
-        rfc1123Time().c_str(),
-        keepalive ? "keep-alive" : "close",
-        strMsg.size(),
-        FormatFullVersion().c_str(),
-        strMsg.c_str());
+               "HTTP/1.1 %d %s\r\n"
+               "Date: %s\r\n"
+               "Connection: %s\r\n"
+               "Content-Length: %d\r\n"
+               "Content-Type: application/json\r\n"
+               "Server: goldcoin-json-rpc/%s\r\n"
+               "\r\n"
+               "%s",
+               nStatus,
+               cStatus,
+               rfc1123Time().c_str(),
+               keepalive ? "keep-alive" : "close",
+               strMsg.size(),
+               FormatFullVersion().c_str(),
+               strMsg.c_str());
 }
 
 int ReadHTTPStatus(std::basic_istream<char>& stream, int &proto)
@@ -2731,7 +2729,7 @@ int ReadHTTPStatus(std::basic_istream<char>& stream, int &proto)
     proto = 0;
     const char *ver = strstr(str.c_str(), "HTTP/1.");
     if (ver != NULL)
-        proto = atoi(ver+7);
+        proto = atoi(ver + 7);
     return atoi(vWords[1].c_str());
 }
 
@@ -2750,7 +2748,7 @@ int ReadHTTPHeader(std::basic_istream<char>& stream, map<string, string>& mapHea
             string strHeader = str.substr(0, nColon);
             boost::trim(strHeader);
             boost::to_lower(strHeader);
-            string strValue = str.substr(nColon+1);
+            string strValue = str.substr(nColon + 1);
             boost::trim(strValue);
             mapHeadersRet[strHeader] = strValue;
             if (strHeader == "content-length")
@@ -2798,7 +2796,7 @@ int ReadHTTP(std::basic_istream<char>& stream, map<string, string>& mapHeadersRe
 bool HTTPAuthorized(map<string, string>& mapHeaders)
 {
     string strAuth = mapHeaders["authorization"];
-    if (strAuth.substr(0,6) != "Basic ")
+    if (strAuth.substr(0, 6) != "Basic ")
         return false;
     string strUserPass64 = strAuth.substr(6); boost::trim(strUserPass64);
     string strUserPass = DecodeBase64(strUserPass64);
@@ -2857,22 +2855,22 @@ bool ClientAllowed(const boost::asio::ip::address& address)
 {
     // Make sure that IPv4-compatible and IPv4-mapped IPv6 addresses are treated as IPv4 addresses
     if (address.is_v6()
-     && (address.to_v6().is_v4_compatible()
-      || address.to_v6().is_v4_mapped()))
+            && (address.to_v6().is_v4_compatible()
+                || address.to_v6().is_v4_mapped()))
         return ClientAllowed(address.to_v6().to_v4());
 
     if (address == asio::ip::address_v4::loopback()
-     || address == asio::ip::address_v6::loopback()
-     || (address.is_v4()
-         // Chech whether IPv4 addresses match 127.0.0.0/8 (loopback subnet)
-      && (address.to_v4().to_ulong() & 0xff000000) == 0x7f000000))
+            || address == asio::ip::address_v6::loopback()
+            || (address.is_v4()
+                // Chech whether IPv4 addresses match 127.0.0.0/8 (loopback subnet)
+                && (address.to_v4().to_ulong() & 0xff000000) == 0x7f000000))
         return true;
 
     const string strAddress = address.to_string();
     const vector<string>& vAllow = mapMultiArgs["-rpcallowip"];
     BOOST_FOREACH(string strAllow, vAllow)
-        if (WildcardMatch(strAddress, strAllow))
-            return true;
+    if (WildcardMatch(strAddress, strAllow))
+        return true;
     return false;
 }
 
@@ -2944,9 +2942,9 @@ class AcceptedConnectionImpl : public AcceptedConnection
 {
 public:
     AcceptedConnectionImpl(
-            asio::io_service& io_service,
-            ssl::context &context,
-            bool fUseSSL) :
+        asio::io_service& io_service,
+        ssl::context &context,
+        bool fUseSSL) :
         sslStream(io_service, context),
         _d(sslStream, fUseSSL),
         _stream(_d)
@@ -3012,21 +3010,21 @@ static void RPCAcceptHandler(boost::shared_ptr< basic_socket_acceptor<Protocol, 
  */
 template <typename Protocol, typename SocketAcceptorService>
 static void RPCListen(boost::shared_ptr< basic_socket_acceptor<Protocol, SocketAcceptorService> > acceptor,
-                   ssl::context& context,
-                   const bool fUseSSL)
+                      ssl::context& context,
+                      const bool fUseSSL)
 {
     // Accept connection
     AcceptedConnectionImpl<Protocol>* conn = new AcceptedConnectionImpl<Protocol>(acceptor->get_io_service(), context, fUseSSL);
 
     acceptor->async_accept(
-            conn->sslStream.lowest_layer(),
-            conn->peer,
-            boost::bind(&RPCAcceptHandler<Protocol, SocketAcceptorService>,
-                acceptor,
-                boost::ref(context),
-                fUseSSL,
-                conn,
-                boost::asio::placeholders::error));
+        conn->sslStream.lowest_layer(),
+        conn->peer,
+        boost::bind(&RPCAcceptHandler<Protocol, SocketAcceptorService>,
+                    acceptor,
+                    boost::ref(context),
+                    fUseSSL,
+                    conn,
+                    boost::asio::placeholders::error));
 }
 
 /**
@@ -3043,7 +3041,7 @@ static void RPCAcceptHandler(boost::shared_ptr< basic_socket_acceptor<Protocol, 
 
     // Immediately start accepting new connections, except when we're canceled or our socket is closed.
     if (error != asio::error::operation_aborted
-     && acceptor->is_open())
+            && acceptor->is_open())
         RPCListen(acceptor, context, fUseSSL);
 
     AcceptedConnectionImpl<ip::tcp>* tcp_conn = dynamic_cast< AcceptedConnectionImpl<ip::tcp>* >(conn);
@@ -3058,7 +3056,7 @@ static void RPCAcceptHandler(boost::shared_ptr< basic_socket_acceptor<Protocol, 
     // do this before starting client thread, to filter out
     // certain DoS and misbehaving clients.
     else if (tcp_conn
-          && !ClientAllowed(tcp_conn->peer.address()))
+             && !ClientAllowed(tcp_conn->peer.address()))
     {
         // Only send a 403 if we're not using SSL to prevent a DoS during the SSL handshake.
         if (!fUseSSL)
@@ -3090,16 +3088,16 @@ void ThreadRPCServer2(void* parg)
         else if (mapArgs.count("-daemon"))
             strWhatAmI = strprintf(_("To use the %s option"), "\"-daemon\"");
         uiInterface.ThreadSafeMessageBox(strprintf(
-            _("%s, you must set a rpcpassword in the configuration file:\n %s\n"
-              "It is recommended you use the following random password:\n"
-              "rpcuser=goldcoinrpc\n"
-              "rpcpassword=%s\n"
-              "(you do not need to remember this password)\n"
-              "If the file does not exist, create it with owner-readable-only file permissions.\n"),
-                strWhatAmI.c_str(),
-                GetConfigFile().string().c_str(),
-                EncodeBase58(&rand_pwd[0],&rand_pwd[0]+32).c_str()),
-            _("Error"), CClientUIInterface::OK | CClientUIInterface::MODAL);
+                                             _("%s, you must set a rpcpassword in the configuration file:\n %s\n"
+                                               "It is recommended you use the following random password:\n"
+                                               "rpcuser=goldcoinrpc\n"
+                                               "rpcpassword=%s\n"
+                                               "(you do not need to remember this password)\n"
+                                               "If the file does not exist, create it with owner-readable-only file permissions.\n"),
+                                             strWhatAmI.c_str(),
+                                             GetConfigFile().string().c_str(),
+                                             EncodeBase58(&rand_pwd[0], &rand_pwd[0] + 32).c_str()),
+                                         _("Error"), CClientUIInterface::OK | CClientUIInterface::MODAL);
         StartShutdown();
         return;
     }
@@ -3152,12 +3150,12 @@ void ThreadRPCServer2(void* parg)
         RPCListen(acceptor, context, fUseSSL);
         // Cancel outstanding listen-requests for this acceptor when shutting down
         StopRequests.connect(signals2::slot<void ()>(
-                    static_cast<void (ip::tcp::acceptor::*)()>(&ip::tcp::acceptor::close), acceptor.get())
-                .track(acceptor));
+                                 static_cast<void (ip::tcp::acceptor::*)()>(&ip::tcp::acceptor::close), acceptor.get())
+                             .track(acceptor));
 
         fListening = true;
     }
-    catch(boost::system::system_error &e)
+    catch (boost::system::system_error &e)
     {
         strerr = strprintf(_("An error occurred while setting up the RPC port %i for listening on IPv6, falling back to IPv4: %s"), endpoint.port(), e.what());
     }
@@ -3178,14 +3176,14 @@ void ThreadRPCServer2(void* parg)
             RPCListen(acceptor, context, fUseSSL);
             // Cancel outstanding listen-requests for this acceptor when shutting down
             StopRequests.connect(signals2::slot<void ()>(
-                        static_cast<void (ip::tcp::acceptor::*)()>(&ip::tcp::acceptor::close), acceptor.get())
-                    .track(acceptor));
+                                     static_cast<void (ip::tcp::acceptor::*)()>(&ip::tcp::acceptor::close), acceptor.get())
+                                 .track(acceptor));
 
             fListening = true;
 
         }
     }
-    catch(boost::system::system_error &e)
+    catch (boost::system::system_error &e)
     {
         strerr = strprintf(_("An error occurred while setting up the RPC port %i for listening on IPv4: %s"), endpoint.port(), e.what());
     }
@@ -3349,12 +3347,12 @@ void ThreadRPCServer3(void* parg)
                 // Send reply
                 strReply = JSONRPCReply(result, Value::null, jreq.id);
 
-            // array of requests
+                // array of requests
             } else if (valRequest.type() == array_type)
                 strReply = JSONRPCExecBatch(valRequest.get_array());
             else
                 throw JSONRPCError(-32700, "Top-level object parse error");
-                
+
             conn->stream() << HTTPReply(200, strReply, fRun) << std::flush;
         }
         catch (Object& objError)
@@ -3386,7 +3384,7 @@ json_spirit::Value CRPCTable::execute(const std::string &strMethod, const json_s
     // Observe safe mode
     string strWarning = GetWarnings("rpc");
     if (strWarning != "" && !GetBoolArg("-disablesafemode") &&
-        !pcmd->okSafeMode)
+            !pcmd->okSafeMode)
         throw JSONRPCError(-2, string("Safe mode: ") + strWarning);
 
     try
@@ -3410,9 +3408,9 @@ Object CallRPC(const string& strMethod, const Array& params)
 {
     if (mapArgs["-rpcuser"] == "" && mapArgs["-rpcpassword"] == "")
         throw runtime_error(strprintf(
-            _("You must set rpcpassword=<password> in the configuration file:\n%s\n"
-              "If the file does not exist, create it with owner-readable-only file permissions."),
-                GetConfigFile().string().c_str()));
+                                _("You must set rpcpassword=<password> in the configuration file:\n%s\n"
+                                  "If the file does not exist, create it with owner-readable-only file permissions."),
+                                GetConfigFile().string().c_str()));
 
     // Connect to localhost
     bool fUseSSL = GetBoolArg("-rpcssl");
@@ -3469,7 +3467,7 @@ void ConvertTo(Value& value)
         Value value2;
         string strJSON = value.get_str();
         if (!read_string(strJSON, value2))
-            throw runtime_error(string("Error parsing JSON:")+strJSON);
+            throw runtime_error(string("Error parsing JSON:") + strJSON);
         value = value2.get_value<T>();
     }
     else
@@ -3482,8 +3480,8 @@ void ConvertTo(Value& value)
 Array RPCConvertValues(const std::string &strMethod, const std::vector<std::string> &strParams)
 {
     Array params;
-    BOOST_FOREACH(const std::string &param, strParams)
-        params.push_back(param);
+    BOOST_FOREACH(const std::string & param, strParams)
+    params.push_back(param);
 
     int n = params.size();
 
@@ -3503,8 +3501,8 @@ Array RPCConvertValues(const std::string &strMethod, const std::vector<std::stri
     if (strMethod == "listreceivedbyaccount"  && n > 1) ConvertTo<bool>(params[1]);
     if (strMethod == "getbalance"             && n > 1) ConvertTo<boost::int64_t>(params[1]);
     if (strMethod == "getblockhash"           && n > 0) ConvertTo<boost::int64_t>(params[0]);
-	if (strMethod == "getblockbyheight"       && n > 0) ConvertTo<boost::int64_t>(params[0]);
-	if (strMethod == "getnetworkhashps"       && n > 0) ConvertTo<boost::int64_t>(params[0]);
+    if (strMethod == "getblockbyheight"       && n > 0) ConvertTo<boost::int64_t>(params[0]);
+    if (strMethod == "getnetworkhashps"       && n > 0) ConvertTo<boost::int64_t>(params[0]);
     if (strMethod == "move"                   && n > 2) ConvertTo<double>(params[2]);
     if (strMethod == "move"                   && n > 3) ConvertTo<boost::int64_t>(params[3]);
     if (strMethod == "sendfrom"               && n > 2) ConvertTo<double>(params[2]);

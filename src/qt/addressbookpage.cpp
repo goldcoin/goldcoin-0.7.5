@@ -37,7 +37,7 @@ AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget *parent) :
     ui->showQRCode->setVisible(false);
 #endif
 
-    switch(mode)
+    switch (mode)
     {
     case ForSending:
         connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(accept()));
@@ -48,7 +48,7 @@ AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget *parent) :
         ui->buttonBox->setVisible(false);
         break;
     }
-    switch(tab)
+    switch (tab)
     {
     case SendingTab:
         ui->labelExplanation->setVisible(false);
@@ -75,13 +75,13 @@ AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget *parent) :
     contextMenu->addAction(copyAddressAction);
     contextMenu->addAction(copyLabelAction);
     contextMenu->addAction(editAction);
-    if(tab == SendingTab)
+    if (tab == SendingTab)
         contextMenu->addAction(deleteAction);
     contextMenu->addSeparator();
     contextMenu->addAction(showQRCodeAction);
-    if(tab == ReceivingTab)
+    if (tab == ReceivingTab)
         contextMenu->addAction(signMessageAction);
-    else if(tab == SendingTab)
+    else if (tab == SendingTab)
         contextMenu->addAction(verifyMessageAction);
 
     // Connect signals for context menu actions
@@ -107,7 +107,7 @@ AddressBookPage::~AddressBookPage()
 void AddressBookPage::setModel(AddressTableModel *model)
 {
     this->model = model;
-    if(!model)
+    if (!model)
         return;
 
     proxyModel = new QSortFilterProxyModel(this);
@@ -115,7 +115,7 @@ void AddressBookPage::setModel(AddressTableModel *model)
     proxyModel->setDynamicSortFilter(true);
     proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    switch(tab)
+    switch (tab)
     {
     case ReceivingTab:
         // Receive filter
@@ -133,16 +133,16 @@ void AddressBookPage::setModel(AddressTableModel *model)
 
     // Set column widths
     ui->tableView->horizontalHeader()->resizeSection(
-            AddressTableModel::Address, 320);
+        AddressTableModel::Address, 320);
     ui->tableView->horizontalHeader()->setResizeMode(
-            AddressTableModel::Label, QHeaderView::Stretch);
+        AddressTableModel::Label, QHeaderView::Stretch);
 
-    connect(ui->tableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+    connect(ui->tableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
             this, SLOT(selectionChanged()));
 
     // Select row for newly created address
-    connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(selectNewAddress(QModelIndex,int,int)));
+    connect(model, SIGNAL(rowsInserted(QModelIndex, int, int)),
+            this, SLOT(selectNewAddress(QModelIndex, int, int)));
 
     selectionChanged();
 }
@@ -164,16 +164,16 @@ void AddressBookPage::onCopyLabelAction()
 
 void AddressBookPage::onEditAction()
 {
-    if(!ui->tableView->selectionModel())
+    if (!ui->tableView->selectionModel())
         return;
     QModelIndexList indexes = ui->tableView->selectionModel()->selectedRows();
-    if(indexes.isEmpty())
+    if (indexes.isEmpty())
         return;
 
     EditAddressDialog dlg(
-            tab == SendingTab ?
-            EditAddressDialog::EditSendingAddress :
-            EditAddressDialog::EditReceivingAddress);
+        tab == SendingTab ?
+        EditAddressDialog::EditSendingAddress :
+        EditAddressDialog::EditReceivingAddress);
     dlg.setModel(model);
     QModelIndex origIndex = proxyModel->mapToSource(indexes.at(0));
     dlg.loadRow(origIndex.row());
@@ -212,14 +212,14 @@ void AddressBookPage::on_verifyMessage_clicked()
 
 void AddressBookPage::on_newAddressButton_clicked()
 {
-    if(!model)
+    if (!model)
         return;
     EditAddressDialog dlg(
-            tab == SendingTab ?
-            EditAddressDialog::NewSendingAddress :
-            EditAddressDialog::NewReceivingAddress, this);
+        tab == SendingTab ?
+        EditAddressDialog::NewSendingAddress :
+        EditAddressDialog::NewReceivingAddress, this);
     dlg.setModel(model);
-    if(dlg.exec())
+    if (dlg.exec())
     {
         newAddressToSelect = dlg.getAddress();
     }
@@ -228,10 +228,10 @@ void AddressBookPage::on_newAddressButton_clicked()
 void AddressBookPage::on_deleteButton_clicked()
 {
     QTableView *table = ui->tableView;
-    if(!table->selectionModel())
+    if (!table->selectionModel())
         return;
     QModelIndexList indexes = table->selectionModel()->selectedRows();
-    if(!indexes.isEmpty())
+    if (!indexes.isEmpty())
     {
         table->model()->removeRow(indexes.at(0).row());
     }
@@ -241,12 +241,12 @@ void AddressBookPage::selectionChanged()
 {
     // Set button states based on selected tab and selection
     QTableView *table = ui->tableView;
-    if(!table->selectionModel())
+    if (!table->selectionModel())
         return;
 
-    if(table->selectionModel()->hasSelection())
+    if (table->selectionModel()->hasSelection())
     {
-        switch(tab)
+        switch (tab)
         {
         case SendingTab:
             // In sending tab, allow deletion of selection
@@ -285,10 +285,10 @@ void AddressBookPage::selectionChanged()
 void AddressBookPage::done(int retval)
 {
     QTableView *table = ui->tableView;
-    if(!table->selectionModel() || !table->model())
+    if (!table->selectionModel() || !table->model())
         return;
     // When this is a tab/widget and not a model dialog, ignore "done"
-    if(mode == ForEditing)
+    if (mode == ForEditing)
         return;
 
     // Figure out which address was selected, and return it
@@ -300,7 +300,7 @@ void AddressBookPage::done(int retval)
         returnValue = address.toString();
     }
 
-    if(returnValue.isEmpty())
+    if (returnValue.isEmpty())
     {
         // If no address entry selected, return rejected
         retval = Rejected;
@@ -313,9 +313,9 @@ void AddressBookPage::exportClicked()
 {
     // CSV is currently the only supported format
     QString filename = GUIUtil::getSaveFileName(
-            this,
-            tr("Export Address Book Data"), QString(),
-            tr("Comma separated file (*.csv)"));
+                           this,
+                           tr("Export Address Book Data"), QString(),
+                           tr("Comma separated file (*.csv)"));
 
     if (filename.isNull()) return;
 
@@ -326,7 +326,7 @@ void AddressBookPage::exportClicked()
     writer.addColumn("Label", AddressTableModel::Label, Qt::EditRole);
     writer.addColumn("Address", AddressTableModel::Address, Qt::EditRole);
 
-    if(!writer.write())
+    if (!writer.write())
     {
         QMessageBox::critical(this, tr("Error exporting"), tr("Could not write to file %1.").arg(filename),
                               QMessageBox::Abort, QMessageBox::Abort);
@@ -344,7 +344,7 @@ void AddressBookPage::on_showQRCode_clicked()
         QString address = index.data().toString(), label = index.sibling(index.row(), 0).data(Qt::EditRole).toString();
 
         QRCodeDialog *dialog = new QRCodeDialog(address, label, tab == ReceivingTab, this);
-        if(optionsModel)
+        if (optionsModel)
             dialog->setModel(optionsModel);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         dialog->show();
@@ -355,7 +355,7 @@ void AddressBookPage::on_showQRCode_clicked()
 void AddressBookPage::contextualMenu(const QPoint &point)
 {
     QModelIndex index = ui->tableView->indexAt(point);
-    if(index.isValid())
+    if (index.isValid())
     {
         contextMenu->exec(QCursor::pos());
     }
@@ -364,7 +364,7 @@ void AddressBookPage::contextualMenu(const QPoint &point)
 void AddressBookPage::selectNewAddress(const QModelIndex &parent, int begin, int end)
 {
     QModelIndex idx = proxyModel->mapFromSource(model->index(begin, AddressTableModel::Address, parent));
-    if(idx.isValid() && (idx.data(Qt::EditRole).toString() == newAddressToSelect))
+    if (idx.isValid() && (idx.data(Qt::EditRole).toString() == newAddressToSelect))
     {
         // Select row of newly created address, once
         ui->tableView->setFocus();

@@ -51,7 +51,7 @@ public:
             {
                 PrintLockContention(pszName, pszFile, nLine);
 #endif
-            lock.lock();
+                lock.lock();
 #ifdef DEBUG_LOCKCONTENTION
             }
 #endif

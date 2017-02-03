@@ -46,9 +46,9 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
         //
         // Credit
         //
-        BOOST_FOREACH(const CTxOut& txout, wtx.vout)
+        BOOST_FOREACH(const CTxOut & txout, wtx.vout)
         {
-            if(wallet->IsMine(txout))
+            if (wallet->IsMine(txout))
             {
                 TransactionRecord sub(hash, nTime);
                 CTxDestination address;
@@ -79,12 +79,12 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
     else
     {
         bool fAllFromMe = true;
-        BOOST_FOREACH(const CTxIn& txin, wtx.vin)
-            fAllFromMe = fAllFromMe && wallet->IsMine(txin);
+        BOOST_FOREACH(const CTxIn & txin, wtx.vin)
+        fAllFromMe = fAllFromMe && wallet->IsMine(txin);
 
         bool fAllToMe = true;
-        BOOST_FOREACH(const CTxOut& txout, wtx.vout)
-            fAllToMe = fAllToMe && wallet->IsMine(txout);
+        BOOST_FOREACH(const CTxOut & txout, wtx.vout)
+        fAllToMe = fAllToMe && wallet->IsMine(txout);
 
         if (fAllFromMe && fAllToMe)
         {
@@ -92,7 +92,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             int64 nChange = wtx.GetChange();
 
             parts.append(TransactionRecord(hash, nTime, TransactionRecord::SendToSelf, "",
-                            -(nDebit - nChange), nCredit - nChange));
+                                           -(nDebit - nChange), nCredit - nChange));
         }
         else if (fAllFromMe)
         {
@@ -107,7 +107,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                 TransactionRecord sub(hash, nTime);
                 sub.idx = parts.size();
 
-                if(wallet->IsMine(txout))
+                if (wallet->IsMine(txout))
                 {
                     // Ignore parts sent to self, as this is usually the change
                     // from a transaction sent back to our own address.
@@ -164,10 +164,10 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
 
     // Sort order, unrecorded transactions sort to the top
     status.sortKey = strprintf("%010d-%01d-%010u-%03d",
-        (pindex ? pindex->nHeight : std::numeric_limits<int>::max()),
-        (wtx.IsCoinBase() ? 1 : 0),
-        wtx.nTimeReceived,
-        idx);
+                               (pindex ? pindex->nHeight : std::numeric_limits<int>::max()),
+                               (wtx.IsCoinBase() ? 1 : 0),
+                               wtx.nTimeReceived,
+                               idx);
     status.confirmed = wtx.IsConfirmed();
     status.depth = wtx.GetDepthInMainChain();
     status.cur_num_blocks = nBestHeight;
@@ -202,7 +202,7 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
     }
 
     // For generated transactions, determine maturity
-    if(type == TransactionRecord::Generated)
+    if (type == TransactionRecord::Generated)
     {
         int64 nCredit = wtx.GetCredit(true);
         if (nCredit == 0)

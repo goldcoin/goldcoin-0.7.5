@@ -61,12 +61,12 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     /* Display elements init */
     QDir translations(":translations");
     ui->lang->addItem(QString("(") + tr("default") + QString(")"), QVariant(""));
-    foreach(const QString &langStr, translations.entryList())
+    foreach (const QString &langStr, translations.entryList())
     {
         QLocale locale(langStr);
 
         /** check if the locale name consists of 2 parts (language_country) */
-        if(langStr.contains("_"))
+        if (langStr.contains("_"))
         {
 #if QT_VERSION >= 0x040800
             /** display language strings as "native language - native country (locale name)", e.g. "Deutsch - Deutschland (de)" */
@@ -115,7 +115,7 @@ void OptionsDialog::setModel(OptionsModel *model)
 {
     this->model = model;
 
-    if(model)
+    if (model)
     {
         connect(model, SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 
@@ -157,7 +157,7 @@ void OptionsDialog::setMapper()
 void OptionsDialog::enableSaveButtons()
 {
     // prevent enabling of the save buttons when data modified, if there is an invalid proxy address present
-    if(fProxyIpValid)
+    if (fProxyIpValid)
         setSaveButtonState(true);
 }
 
@@ -191,7 +191,7 @@ void OptionsDialog::on_applyButton_clicked()
 
 void OptionsDialog::showRestartWarning_Proxy()
 {
-    if(!fRestartWarningDisplayed_Proxy)
+    if (!fRestartWarningDisplayed_Proxy)
     {
         QMessageBox::warning(this, tr("Warning"), tr("This setting will take effect after restarting GoldCoin (GLD)."), QMessageBox::Ok);
         fRestartWarningDisplayed_Proxy = true;
@@ -200,7 +200,7 @@ void OptionsDialog::showRestartWarning_Proxy()
 
 void OptionsDialog::showRestartWarning_Lang()
 {
-    if(!fRestartWarningDisplayed_Lang)
+    if (!fRestartWarningDisplayed_Lang)
     {
         QMessageBox::warning(this, tr("Warning"), tr("This setting will take effect after restarting GoldCoin (GLD)."), QMessageBox::Ok);
         fRestartWarningDisplayed_Lang = true;
@@ -209,7 +209,7 @@ void OptionsDialog::showRestartWarning_Lang()
 
 void OptionsDialog::updateDisplayUnit()
 {
-    if(model)
+    if (model)
     {
         // Update transactionFee with the current unit
         ui->transactionFee->setDisplayUnit(model->getDisplayUnit());
@@ -218,11 +218,11 @@ void OptionsDialog::updateDisplayUnit()
 
 bool OptionsDialog::eventFilter(QObject *object, QEvent *event)
 {
-    if(object == ui->proxyIp && event->type() == QEvent::FocusOut)
+    if (object == ui->proxyIp && event->type() == QEvent::FocusOut)
     {
         // Check proxyIP for a valid IPv4/IPv6 address
         CService addr;
-        if(!LookupNumeric(ui->proxyIp->text().toStdString().c_str(), addr))
+        if (!LookupNumeric(ui->proxyIp->text().toStdString().c_str(), addr))
         {
             ui->proxyIp->setValid(false);
             fProxyIpValid = false;

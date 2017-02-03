@@ -76,7 +76,7 @@ bool OptionsModel::Upgrade()
 
     QList<QString> intOptions;
     intOptions << "nDisplayUnit" << "nTransactionFee";
-    foreach(QString key, intOptions)
+    foreach (QString key, intOptions)
     {
         int value = 0;
         if (walletdb.ReadSetting(key.toStdString(), value))
@@ -87,7 +87,7 @@ bool OptionsModel::Upgrade()
     }
     QList<QString> boolOptions;
     boolOptions << "bDisplayAddresses" << "fMinimizeToTray" << "fMinimizeOnClose" << "fUseProxy" << "fUseUPnP";
-    foreach(QString key, boolOptions)
+    foreach (QString key, boolOptions)
     {
         bool value = false;
         if (walletdb.ReadSetting(key.toStdString(), value))
@@ -129,10 +129,10 @@ int OptionsModel::rowCount(const QModelIndex & parent) const
 
 QVariant OptionsModel::data(const QModelIndex & index, int role) const
 {
-    if(role == Qt::EditRole)
+    if (role == Qt::EditRole)
     {
         QSettings settings;
-        switch(index.row())
+        switch (index.row())
         {
         case StartAtStartup:
             return QVariant(GUIUtil::GetStartOnSystemStartup());
@@ -179,10 +179,10 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
 bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
     bool successful = true; /* set to false on parse error */
-    if(role == Qt::EditRole)
+    if (role == Qt::EditRole)
     {
         QSettings settings;
-        switch(index.row())
+        switch (index.row())
         {
         case StartAtStartup:
             successful = GUIUtil::SetStartOnSystemStartup(value.toBool());
@@ -205,24 +205,24 @@ bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, in
             ApplyProxySettings();
             break;
         case ProxyIP:
-            {
-                CService addrProxy("127.0.0.1", 9050);
-                GetProxy(NET_IPV4, addrProxy);
-                CNetAddr addr(value.toString().toStdString());
-                addrProxy.SetIP(addr);
-                settings.setValue("addrProxy", addrProxy.ToStringIPPort().c_str());
-                successful = ApplyProxySettings();
-            }
-            break;
+        {
+            CService addrProxy("127.0.0.1", 9050);
+            GetProxy(NET_IPV4, addrProxy);
+            CNetAddr addr(value.toString().toStdString());
+            addrProxy.SetIP(addr);
+            settings.setValue("addrProxy", addrProxy.ToStringIPPort().c_str());
+            successful = ApplyProxySettings();
+        }
+        break;
         case ProxyPort:
-            {
-                CService addrProxy("127.0.0.1", 9050);
-                GetProxy(NET_IPV4, addrProxy);
-                addrProxy.SetPort(value.toInt());
-                settings.setValue("addrProxy", addrProxy.ToStringIPPort().c_str());
-                successful = ApplyProxySettings();
-            }
-            break;
+        {
+            CService addrProxy("127.0.0.1", 9050);
+            GetProxy(NET_IPV4, addrProxy);
+            addrProxy.SetPort(value.toInt());
+            settings.setValue("addrProxy", addrProxy.ToStringIPPort().c_str());
+            successful = ApplyProxySettings();
+        }
+        break;
         case ProxySocksVersion:
             settings.setValue("nSocksVersion", value.toInt());
             ApplyProxySettings();
@@ -244,8 +244,8 @@ bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, in
             bool fDetachDB = value.toBool();
             bitdb.SetDetach(fDetachDB);
             settings.setValue("detachDB", fDetachDB);
-            }
-            break;
+        }
+        break;
         case Language:
             settings.setValue("language", value);
             break;

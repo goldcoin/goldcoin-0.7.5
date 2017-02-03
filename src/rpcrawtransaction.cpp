@@ -46,8 +46,8 @@ ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out)
     out.push_back(Pair("type", GetTxnOutputType(type)));
 
     Array a;
-    BOOST_FOREACH(const CTxDestination& addr, addresses)
-        a.push_back(CBitcoinAddress(addr).ToString());
+    BOOST_FOREACH(const CTxDestination & addr, addresses)
+    a.push_back(CBitcoinAddress(addr).ToString());
     out.push_back(Pair("addresses", a));
 }
 
@@ -58,7 +58,7 @@ TxToJSON(const CTransaction& tx, const uint256 hashBlock, Object& entry)
     entry.push_back(Pair("version", tx.nVersion));
     entry.push_back(Pair("locktime", (boost::int64_t)tx.nLockTime));
     Array vin;
-    BOOST_FOREACH(const CTxIn& txin, tx.vin)
+    BOOST_FOREACH(const CTxIn & txin, tx.vin)
     {
         Object in;
         if (tx.IsCoinBase())
@@ -166,7 +166,7 @@ Value listunspent(const Array& params, bool fHelp)
     Array results;
     vector<COutput> vecOutputs;
     pwalletMain->AvailableCoins(vecOutputs, false);
-    BOOST_FOREACH(const COutput& out, vecOutputs)
+    BOOST_FOREACH(const COutput & out, vecOutputs)
     {
         if (out.nDepth < nMinDepth || out.nDepth > nMaxDepth)
             continue;
@@ -177,8 +177,8 @@ Value listunspent(const Array& params, bool fHelp)
         entry.push_back(Pair("txid", out.tx->GetHash().GetHex()));
         entry.push_back(Pair("vout", out.i));
         entry.push_back(Pair("scriptPubKey", HexStr(pk.begin(), pk.end())));
-        entry.push_back(Pair("amount",ValueFromAmount(nValue)));
-        entry.push_back(Pair("confirmations",out.nDepth));
+        entry.push_back(Pair("amount", ValueFromAmount(nValue)));
+        entry.push_back(Pair("confirmations", out.nDepth));
         results.push_back(entry);
     }
 
@@ -204,7 +204,7 @@ Value createrawtransaction(const Array& params, bool fHelp)
 
     CTransaction rawTx;
 
-    BOOST_FOREACH(Value& input, inputs)
+    BOOST_FOREACH(Value & input, inputs)
     {
         const Object& o = input.get_obj();
 
@@ -227,14 +227,14 @@ Value createrawtransaction(const Array& params, bool fHelp)
     }
 
     set<CBitcoinAddress> setAddress;
-    BOOST_FOREACH(const Pair& s, sendTo)
+    BOOST_FOREACH(const Pair & s, sendTo)
     {
         CBitcoinAddress address(s.name_);
         if (!address.IsValid())
-            throw JSONRPCError(-5, string("Invalid Bitcoin address:")+s.name_);
+            throw JSONRPCError(-5, string("Invalid Bitcoin address:") + s.name_);
 
         if (setAddress.count(address))
-            throw JSONRPCError(-8, string("Invalid parameter, duplicated address: ")+s.name_);
+            throw JSONRPCError(-8, string("Invalid parameter, duplicated address: ") + s.name_);
         setAddress.insert(address);
 
         CScript scriptPubKey;
@@ -330,7 +330,7 @@ Value signrawtransaction(const Array& params, bool fHelp)
         mergedTx.FetchInputs(txdb, unused, false, false, mapPrevTx, fInvalid);
 
         // Copy results into mapPrevOut:
-        BOOST_FOREACH(const CTxIn& txin, mergedTx.vin)
+        BOOST_FOREACH(const CTxIn & txin, mergedTx.vin)
         {
             const uint256& prevHash = txin.prevout.hash;
             if (mapPrevTx.count(prevHash))
@@ -342,7 +342,7 @@ Value signrawtransaction(const Array& params, bool fHelp)
     if (params.size() > 1)
     {
         Array prevTxs = params[1].get_array();
-        BOOST_FOREACH(Value& p, prevTxs)
+        BOOST_FOREACH(Value & p, prevTxs)
         {
             if (p.type() != obj_type)
                 throw JSONRPCError(-22, "expected object with {\"txid'\",\"vout\",\"scriptPubKey\"}");
@@ -374,8 +374,8 @@ Value signrawtransaction(const Array& params, bool fHelp)
                 if (mapPrevOut[outpoint] != scriptPubKey)
                 {
                     string err("Previous output scriptPubKey mismatch:\n");
-                    err = err + mapPrevOut[outpoint].ToString() + "\nvs:\n"+
-                        scriptPubKey.ToString();
+                    err = err + mapPrevOut[outpoint].ToString() + "\nvs:\n" +
+                          scriptPubKey.ToString();
                     throw JSONRPCError(-22, err);
                 }
             }
@@ -395,7 +395,7 @@ Value signrawtransaction(const Array& params, bool fHelp)
             CBitcoinSecret vchSecret;
             bool fGood = vchSecret.SetString(k.get_str());
             if (!fGood)
-                throw JSONRPCError(-5,"Invalid private key");
+                throw JSONRPCError(-5, "Invalid private key");
             CKey key;
             bool fCompressed;
             CSecret secret = vchSecret.GetSecret(fCompressed);
@@ -411,11 +411,11 @@ Value signrawtransaction(const Array& params, bool fHelp)
         static map<string, int> mapSigHashValues =
             boost::assign::map_list_of
             (string("ALL"), int(SIGHASH_ALL))
-            (string("ALL|ANYONECANPAY"), int(SIGHASH_ALL|SIGHASH_ANYONECANPAY))
+            (string("ALL|ANYONECANPAY"), int(SIGHASH_ALL | SIGHASH_ANYONECANPAY))
             (string("NONE"), int(SIGHASH_NONE))
-            (string("NONE|ANYONECANPAY"), int(SIGHASH_NONE|SIGHASH_ANYONECANPAY))
+            (string("NONE|ANYONECANPAY"), int(SIGHASH_NONE | SIGHASH_ANYONECANPAY))
             (string("SINGLE"), int(SIGHASH_SINGLE))
-            (string("SINGLE|ANYONECANPAY"), int(SIGHASH_SINGLE|SIGHASH_ANYONECANPAY))
+            (string("SINGLE|ANYONECANPAY"), int(SIGHASH_SINGLE | SIGHASH_ANYONECANPAY))
             ;
         string strHashType = params[3].get_str();
         if (mapSigHashValues.count(strHashType))
@@ -439,7 +439,7 @@ Value signrawtransaction(const Array& params, bool fHelp)
         SignSignature(keystore, prevPubKey, mergedTx, i, nHashType);
 
         // ... and merge in other signatures:
-        BOOST_FOREACH(const CTransaction& txv, txVariants)
+        BOOST_FOREACH(const CTransaction & txv, txVariants)
         {
             txin.scriptSig = CombineSignatures(prevPubKey, mergedTx, i, txin.scriptSig, txv.vin[i].scriptSig);
         }
@@ -486,7 +486,7 @@ Value sendrawtransaction(const Array& params, bool fHelp)
     if (GetTransaction(hashTx, existingTx, hashBlock))
     {
         if (hashBlock != 0)
-            throw JSONRPCError(-5, string("transaction already in block ")+hashBlock.GetHex());
+            throw JSONRPCError(-5, string("transaction already in block ") + hashBlock.GetHex());
         // Not in block, but already in the memory pool; will drop
         // through to re-relay it.
     }

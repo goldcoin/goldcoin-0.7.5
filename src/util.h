@@ -70,7 +70,7 @@ T* alignup(T* p)
         size_t n;
     } u;
     u.ptr = p;
-    u.n = (u.n + (nBytes-1)) & ~(nBytes-1);
+    u.n = (u.n + (nBytes - 1)) & ~(nBytes - 1);
     return u.ptr;
 }
 
@@ -92,7 +92,7 @@ inline void Sleep(int64 n)
 {
     /*Boost has a year 2038 problem— if the request sleep time is past epoch+2^31 seconds the sleep returns instantly.
       So we clamp our sleeps here to 10 years and hope that boost is fixed by 2028.*/
-    boost::thread::sleep(boost::get_system_time() + boost::posix_time::milliseconds(n>315576000000LL?315576000000LL:n));
+    boost::thread::sleep(boost::get_system_time() + boost::posix_time::milliseconds(n > 315576000000LL ? 315576000000LL : n));
 }
 #endif
 
@@ -139,7 +139,7 @@ void LogException(std::exception* pex, const char* pszThread);
 void PrintException(std::exception* pex, const char* pszThread);
 void PrintExceptionContinue(std::exception* pex, const char* pszThread);
 void ParseString(const std::string& str, char c, std::vector<std::string>& v);
-std::string FormatMoney(int64 n, bool fPlus=false);
+std::string FormatMoney(int64 n, bool fPlus = false);
 bool ParseMoney(const std::string& str, int64& nRet);
 bool ParseMoney(const char* pszIn, int64& nRet);
 std::vector<unsigned char> ParseHex(const char* psz);
@@ -237,36 +237,37 @@ inline int64 abs64(int64 n)
 }
 
 template<typename T>
-std::string HexStr(const T itbegin, const T itend, bool fSpaces=false)
+std::string HexStr(const T itbegin, const T itend, bool fSpaces = false)
 {
     std::vector<char> rv;
     static char hexmap[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
-                               '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-    rv.reserve((itend-itbegin)*3);
-    for(T it = itbegin; it < itend; ++it)
+                               '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+                             };
+    rv.reserve((itend - itbegin) * 3);
+    for (T it = itbegin; it < itend; ++it)
     {
         unsigned char val = (unsigned char)(*it);
-        if(fSpaces && it != itbegin)
+        if (fSpaces && it != itbegin)
             rv.push_back(' ');
-        rv.push_back(hexmap[val>>4]);
-        rv.push_back(hexmap[val&15]);
+        rv.push_back(hexmap[val >> 4]);
+        rv.push_back(hexmap[val & 15]);
     }
 
     return std::string(rv.begin(), rv.end());
 }
 
-inline std::string HexStr(const std::vector<unsigned char>& vch, bool fSpaces=false)
+inline std::string HexStr(const std::vector<unsigned char>& vch, bool fSpaces = false)
 {
     return HexStr(vch.begin(), vch.end(), fSpaces);
 }
 
 template<typename T>
-void PrintHex(const T pbegin, const T pend, const char* pszFormat="%s", bool fSpaces=true)
+void PrintHex(const T pbegin, const T pend, const char* pszFormat = "%s", bool fSpaces = true)
 {
     printf(pszFormat, HexStr(pbegin, pend, fSpaces).c_str());
 }
 
-inline void PrintHex(const std::vector<unsigned char>& vch, const char* pszFormat="%s", bool fSpaces=true)
+inline void PrintHex(const std::vector<unsigned char>& vch, const char* pszFormat = "%s", bool fSpaces = true)
 {
     printf(pszFormat, HexStr(vch, fSpaces).c_str());
 }
@@ -287,7 +288,7 @@ inline int64 GetPerformanceCounter()
 inline int64 GetTimeMillis()
 {
     return (boost::posix_time::ptime(boost::posix_time::microsec_clock::universal_time()) -
-            boost::posix_time::ptime(boost::gregorian::date(1970,1,1))).total_milliseconds();
+            boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_milliseconds();
 }
 
 inline std::string DateTimeStrFormat(const char* pszFormat, int64 nTime)
@@ -340,7 +341,7 @@ int64 GetArg(const std::string& strArg, int64 nDefault);
  * @param default (true or false)
  * @return command-line argument or default value
  */
-bool GetBoolArg(const std::string& strArg, bool fDefault=false);
+bool GetBoolArg(const std::string& strArg, bool fDefault = false);
 
 /**
  * Set an argument if it doesn't already have a value
@@ -468,7 +469,7 @@ inline uint256 Hash(const T1 p1begin, const T1 p1end,
 }
 
 template<typename T>
-uint256 SerializeHash(const T& obj, int nType=SER_GETHASH, int nVersion=PROTOCOL_VERSION)
+uint256 SerializeHash(const T& obj, int nType = SER_GETHASH, int nVersion = PROTOCOL_VERSION)
 {
     CHashWriter ss(nType, nVersion);
     ss << obj;
@@ -485,7 +486,7 @@ inline uint160 Hash160(const std::vector<unsigned char>& vch)
 }
 
 
-/** Median filter over a stream of values. 
+/** Median filter over a stream of values.
  * Returns the median of the last N numbers
  */
 template <typename T> class CMedianFilter
@@ -502,10 +503,10 @@ public:
         vValues.push_back(initial_value);
         vSorted = vValues;
     }
-    
+
     void input(T value)
     {
-        if(vValues.size() == nSize)
+        if (vValues.size() == nSize)
         {
             vValues.erase(vValues.begin());
         }
@@ -519,39 +520,39 @@ public:
     T median() const
     {
         int size = vSorted.size();
-        assert(size>0);
-        if(size & 1) // Odd number of elements
+        assert(size > 0);
+        if (size & 1) // Odd number of elements
         {
-            return vSorted[size/2];
+            return vSorted[size / 2];
         }
         else // Even number of elements
         {
-            return (vSorted[size/2-1] + vSorted[size/2]) / 2;
+            return (vSorted[size / 2 - 1] + vSorted[size / 2]) / 2;
         }
     }
-	
-	T mode() const
-	{
-		int size = vSorted.size();
-        assert(size>0);
-		
-		int countOld = -1;
-		int count = 0;
-		int num = 0;
-		for(int x = 0; x < size; x++) {
-			count = 0;
-			for(int y=0; y < size; y++) {
-				if(vSorted[x] == vSorted[y] && x != y) {
-					count++;
-				}
-			}
-            if(count > countOld) {
-				num = x;
-				countOld = count;
-			}
-		}
-		return vSorted[num];
-	}
+
+    T mode() const
+    {
+        int size = vSorted.size();
+        assert(size > 0);
+
+        int countOld = -1;
+        int count = 0;
+        int num = 0;
+        for (int x = 0; x < size; x++) {
+            count = 0;
+            for (int y = 0; y < size; y++) {
+                if (vSorted[x] == vSorted[y] && x != y) {
+                    count++;
+                }
+            }
+            if (count > countOld) {
+                num = x;
+                countOld = count;
+            }
+        }
+        return vSorted[num];
+    }
 
     int size() const
     {
@@ -577,7 +578,7 @@ public:
 // by using TerminateThread(boost::thread.native_handle(), 0);
 #ifdef WIN32
 
-inline HANDLE CreateThread(void(*pfn)(void*), void* parg, bool fWantHandle=false)
+inline HANDLE CreateThread(void(*pfn)(void*), void* parg, bool fWantHandle = false)
 {
     DWORD nUnused = 0;
     HANDLE hthread =
@@ -596,7 +597,7 @@ inline HANDLE CreateThread(void(*pfn)(void*), void* parg, bool fWantHandle=false
     if (!fWantHandle)
     {
         CloseHandle(hthread);
-        return (HANDLE)-1;
+        return (HANDLE) - 1;
     }
     return hthread;
 }
@@ -606,7 +607,7 @@ inline void SetThreadPriority(int nPriority)
     SetThreadPriority(GetCurrentThread(), nPriority);
 }
 #else
-inline pthread_t CreateThread(void(*pfn)(void*), void* parg, bool fWantHandle=false)
+inline pthread_t CreateThread(void(*pfn)(void*), void* parg, bool fWantHandle = false)
 {
     pthread_t hthread = 0;
     int ret = pthread_create(&hthread, NULL, (void*(*)(void*))pfn, parg);
@@ -618,7 +619,7 @@ inline pthread_t CreateThread(void(*pfn)(void*), void* parg, bool fWantHandle=fa
     if (!fWantHandle)
     {
         pthread_detach(hthread);
-        return (pthread_t)-1;
+        return (pthread_t) - 1;
     }
     return hthread;
 }
@@ -650,7 +651,7 @@ void RenameThread(const char* name);
 inline uint32_t ByteReverse(uint32_t value)
 {
     value = ((value & 0xFF00FF00) >> 8) | ((value & 0x00FF00FF) << 8);
-    return (value<<16) | (value>>16);
+    return (value << 16) | (value >> 16);
 }
 
 #endif

@@ -40,7 +40,7 @@ struct CLockLocation
 
     std::string ToString() const
     {
-        return mutexName+"  "+sourceFile+":"+itostr(sourceLine);
+        return mutexName + "  " + sourceFile + ":" + itostr(sourceLine);
     }
 
 private:
@@ -107,7 +107,7 @@ static void push_lock(void* c, const CLockLocation& locklocation, bool fTry)
 
 static void pop_lock()
 {
-    if (fDebug) 
+    if (fDebug)
     {
         const CLockLocation& locklocation = (*lockstack).rbegin()->second;
         printf("Unlocked: %s\n", locklocation.ToString().c_str());

@@ -15,7 +15,7 @@
 #include <qmath.h>
 
 BitcoinAmountField::BitcoinAmountField(QWidget *parent):
-        QWidget(parent), amount(0), currentUnit(-1)
+    QWidget(parent), amount(0), currentUnit(-1)
 {
     amount = new QDoubleSpinBox(this);
     amount->setLocale(QLocale::c());
@@ -30,7 +30,7 @@ BitcoinAmountField::BitcoinAmountField(QWidget *parent):
     unit->setModel(new BitcoinUnits(this));
     layout->addWidget(unit);
     layout->addStretch(1);
-    layout->setContentsMargins(0,0,0,0);
+    layout->setContentsMargins(0, 0, 0, 0);
 
     setLayout(layout);
 
@@ -119,7 +119,7 @@ qint64 BitcoinAmountField::value(bool *valid_out) const
 {
     qint64 val_out = 0;
     bool valid = BitcoinUnits::parse(currentUnit, text(), &val_out);
-    if(valid_out)
+    if (valid_out)
     {
         *valid_out = valid;
     }
@@ -149,7 +149,7 @@ void BitcoinAmountField::unitChanged(int idx)
     amount->setDecimals(BitcoinUnits::decimals(currentUnit));
     amount->setMaximum(qPow(10, BitcoinUnits::amountDigits(currentUnit)) - qPow(10, -amount->decimals()));
 
-    if(valid)
+    if (valid)
     {
         // If value was valid, re-place it in the widget with the new unit
         setValue(currentValue);
