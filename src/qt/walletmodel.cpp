@@ -65,13 +65,13 @@ void WalletModel::updateStatus()
 {
     EncryptionStatus newEncryptionStatus = getEncryptionStatus();
 
-    if(cachedEncryptionStatus != newEncryptionStatus)
+    if (cachedEncryptionStatus != newEncryptionStatus)
         emit encryptionStatusChanged(newEncryptionStatus);
 }
 
 void WalletModel::pollBalanceChanged()
 {
-    if(nBestHeight != cachedNumBlocks)
+    if (nBestHeight != cachedNumBlocks)
     {
         // Balance and number of transactions might have changed
         cachedNumBlocks = nBestHeight;
@@ -85,7 +85,7 @@ void WalletModel::checkBalanceChanged()
     qint64 newUnconfirmedBalance = getUnconfirmedBalance();
     qint64 newImmatureBalance = getImmatureBalance();
 
-    if(cachedBalance != newBalance || cachedUnconfirmedBalance != newUnconfirmedBalance || cachedImmatureBalance != newImmatureBalance)
+    if (cachedBalance != newBalance || cachedUnconfirmedBalance != newUnconfirmedBalance || cachedImmatureBalance != newImmatureBalance)
     {
         cachedBalance = newBalance;
         cachedUnconfirmedBalance = newUnconfirmedBalance;
@@ -96,14 +96,14 @@ void WalletModel::checkBalanceChanged()
 
 void WalletModel::updateTransaction(const QString &hash, int status)
 {
-    if(transactionTableModel)
+    if (transactionTableModel)
         transactionTableModel->updateTransaction(hash, status);
 
     // Balance and number of transactions might have changed
     checkBalanceChanged();
 
     int newNumTransactions = getNumTransactions();
-    if(cachedNumTransactions != newNumTransactions)
+    if (cachedNumTransactions != newNumTransactions)
     {
         cachedNumTransactions = newNumTransactions;
         emit numTransactionsChanged(newNumTransactions);
@@ -112,7 +112,7 @@ void WalletModel::updateTransaction(const QString &hash, int status)
 
 void WalletModel::updateAddressBook(const QString &address, const QString &label, bool isMine, int status)
 {
-    if(addressTableModel)
+    if (addressTableModel)
         addressTableModel->updateEntry(address, label, isMine, status);
 }
 
@@ -128,38 +128,38 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
     QSet<QString> setAddress;
     QString hex;
 
-    if(recipients.empty())
+    if (recipients.empty())
     {
         return OK;
     }
 
     // Pre-check input data for validity
-    foreach(const SendCoinsRecipient &rcp, recipients)
+    foreach (const SendCoinsRecipient &rcp, recipients)
     {
-        if(!validateAddress(rcp.address))
+        if (!validateAddress(rcp.address))
         {
             return InvalidAddress;
         }
         setAddress.insert(rcp.address);
 
-        if(rcp.amount <= 0)
+        if (rcp.amount <= 0)
         {
             return InvalidAmount;
         }
         total += rcp.amount;
     }
 
-    if(recipients.size() > setAddress.size())
+    if (recipients.size() > setAddress.size())
     {
         return DuplicateAddress;
     }
 
-    if(total > getBalance())
+    if (total > getBalance())
     {
         return AmountExceedsBalance;
     }
 
-    if((total + nTransactionFee) > getBalance())
+    if ((total + nTransactionFee) > getBalance())
     {
         return SendCoinsReturn(AmountWithFeeExceedsBalance, nTransactionFee);
     }
@@ -169,7 +169,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
 
         // Sendmany
         std::vector<std::pair<CScript, int64> > vecSend;
-        foreach(const SendCoinsRecipient &rcp, recipients)
+        foreach (const SendCoinsRecipient &rcp, recipients)
         {
             CScript scriptPubKey;
             scriptPubKey.SetDestination(CBitcoinAddress(rcp.address.toStdString()).Get());
@@ -181,19 +181,19 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
         int64 nFeeRequired = 0;
         bool fCreated = wallet->CreateTransaction(vecSend, wtx, keyChange, nFeeRequired);
 
-        if(!fCreated)
+        if (!fCreated)
         {
-            if((total + nFeeRequired) > wallet->GetBalance())
+            if ((total + nFeeRequired) > wallet->GetBalance())
             {
                 return SendCoinsReturn(AmountWithFeeExceedsBalance, nFeeRequired);
             }
             return TransactionCreationFailed;
         }
-        if(!uiInterface.ThreadSafeAskFee(nFeeRequired, tr("Sending...").toStdString()))
+        if (!uiInterface.ThreadSafeAskFee(nFeeRequired, tr("Sending...").toStdString()))
         {
             return Aborted;
         }
-        if(!wallet->CommitTransaction(wtx, keyChange))
+        if (!wallet->CommitTransaction(wtx, keyChange))
         {
             return TransactionCommitFailed;
         }
@@ -201,7 +201,7 @@ WalletModel::SendCoinsReturn WalletModel::sendCoins(const QList<SendCoinsRecipie
     }
 
     // Add addresses / update labels that we've sent to to the address book
-    foreach(const SendCoinsRecipient &rcp, recipients)
+    foreach (const SendCoinsRecipient &rcp, recipients)
     {
         std::string strAddress = rcp.address.toStdString();
         CTxDestination dest = CBitcoinAddress(strAddress).Get();
@@ -239,11 +239,11 @@ TransactionTableModel *WalletModel::getTransactionTableModel()
 
 WalletModel::EncryptionStatus WalletModel::getEncryptionStatus() const
 {
-    if(!wallet->IsCrypted())
+    if (!wallet->IsCrypted())
     {
         return Unencrypted;
     }
-    else if(wallet->IsLocked())
+    else if (wallet->IsLocked())
     {
         return Locked;
     }
@@ -255,7 +255,7 @@ WalletModel::EncryptionStatus WalletModel::getEncryptionStatus() const
 
 bool WalletModel::setWalletEncrypted(bool encrypted, const SecureString &passphrase)
 {
-    if(encrypted)
+    if (encrypted)
     {
         // Encrypt
         return wallet->EncryptWallet(passphrase);
@@ -269,7 +269,7 @@ bool WalletModel::setWalletEncrypted(bool encrypted, const SecureString &passphr
 
 bool WalletModel::setWalletLocked(bool locked, const SecureString &passPhrase)
 {
-    if(locked)
+    if (locked)
     {
         // Lock
         return wallet->Lock();
@@ -342,7 +342,7 @@ void WalletModel::unsubscribeFromCoreSignals()
 WalletModel::UnlockContext WalletModel::requestUnlock()
 {
     bool was_locked = getEncryptionStatus() == Locked;
-    if(was_locked)
+    if (was_locked)
     {
         // Request UI to unlock wallet
         emit requireUnlock();
@@ -354,15 +354,15 @@ WalletModel::UnlockContext WalletModel::requestUnlock()
 }
 
 WalletModel::UnlockContext::UnlockContext(WalletModel *wallet, bool valid, bool relock):
-        wallet(wallet),
-        valid(valid),
-        relock(relock)
+    wallet(wallet),
+    valid(valid),
+    relock(relock)
 {
 }
 
 WalletModel::UnlockContext::~UnlockContext()
 {
-    if(valid && relock)
+    if (valid && relock)
     {
         wallet->setWalletLocked(true);
     }

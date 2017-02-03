@@ -45,20 +45,20 @@ static void writeNewline(QTextStream &f)
 bool CSVModelWriter::write()
 {
     QFile file(filename);
-    if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
         return false;
     QTextStream out(&file);
 
     int numRows = 0;
-    if(model)
+    if (model)
     {
         numRows = model->rowCount();
     }
 
     // Header row
-    for(int i=0; i<columns.size(); ++i)
+    for (int i = 0; i < columns.size(); ++i)
     {
-        if(i!=0)
+        if (i != 0)
         {
             writeSep(out);
         }
@@ -67,11 +67,11 @@ bool CSVModelWriter::write()
     writeNewline(out);
 
     // Data rows
-    for(int j=0; j<numRows; ++j)
+    for (int j = 0; j < numRows; ++j)
     {
-        for(int i=0; i<columns.size(); ++i)
+        for (int i = 0; i < columns.size(); ++i)
         {
-            if(i!=0)
+            if (i != 0)
             {
                 writeSep(out);
             }

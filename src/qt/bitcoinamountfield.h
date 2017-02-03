@@ -17,7 +17,7 @@ class BitcoinAmountField: public QWidget
 public:
     explicit BitcoinAmountField(QWidget *parent = 0);
 
-    qint64 value(bool *valid=0) const;
+    qint64 value(bool *valid = 0) const;
     void setValue(qint64 value);
 
     /** Mark current value as invalid in UI. */

@@ -67,8 +67,8 @@ public:
     struct SendCoinsReturn
     {
         SendCoinsReturn(StatusCode status,
-                         qint64 fee=0,
-                         QString hex=QString()):
+                        qint64 fee = 0,
+                        QString hex = QString()):
             status(status), fee(fee), hex(hex) {}
         StatusCode status;
         qint64 fee; // is used in case status is "AmountWithFeeExceedsBalance"
@@ -81,7 +81,7 @@ public:
     // Wallet encryption
     bool setWalletEncrypted(bool encrypted, const SecureString &passphrase);
     // Passphrase only needed when unlocking
-    bool setWalletLocked(bool locked, const SecureString &passPhrase=SecureString());
+    bool setWalletLocked(bool locked, const SecureString &passPhrase = SecureString());
     bool changePassphrase(const SecureString &oldPass, const SecureString &newPass);
     // Wallet backup
     bool backupWallet(const QString &filename);

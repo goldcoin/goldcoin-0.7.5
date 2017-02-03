@@ -4,7 +4,7 @@
 #include <QDialog>
 
 namespace Ui {
-    class SignVerifyMessageDialog;
+class SignVerifyMessageDialog;
 }
 class WalletModel;
 

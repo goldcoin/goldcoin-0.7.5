@@ -44,11 +44,11 @@ void SendCoinsEntry::on_pasteButton_clicked()
 
 void SendCoinsEntry::on_addressBookButton_clicked()
 {
-    if(!model)
+    if (!model)
         return;
     AddressBookPage dlg(AddressBookPage::ForSending, AddressBookPage::SendingTab, this);
     dlg.setModel(model->getAddressTableModel());
-    if(dlg.exec())
+    if (dlg.exec())
     {
         ui->payTo->setText(dlg.getReturnValue());
         ui->payAmount->setFocus();
@@ -57,11 +57,11 @@ void SendCoinsEntry::on_addressBookButton_clicked()
 
 void SendCoinsEntry::on_payTo_textChanged(const QString &address)
 {
-    if(!model)
+    if (!model)
         return;
     // Fill in label from address book, if address has an associated label
     QString associatedLabel = model->getAddressTableModel()->labelForAddress(address);
-    if(!associatedLabel.isEmpty())
+    if (!associatedLabel.isEmpty())
         ui->addAsLabel->setText(associatedLabel);
 }
 
@@ -69,7 +69,7 @@ void SendCoinsEntry::setModel(WalletModel *model)
 {
     this->model = model;
 
-    if(model && model->getOptionsModel())
+    if (model && model->getOptionsModel())
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 
     clear();
@@ -100,13 +100,13 @@ bool SendCoinsEntry::validate()
     // Check input validity
     bool retval = true;
 
-    if(!ui->payAmount->validate())
+    if (!ui->payAmount->validate())
     {
         retval = false;
     }
     else
     {
-        if(ui->payAmount->value() <= 0)
+        if (ui->payAmount->value() <= 0)
         {
             // Cannot send 0 coins or less
             ui->payAmount->setValid(false);
@@ -114,8 +114,8 @@ bool SendCoinsEntry::validate()
         }
     }
 
-    if(!ui->payTo->hasAcceptableInput() ||
-       (model && !model->validateAddress(ui->payTo->text())))
+    if (!ui->payTo->hasAcceptableInput() ||
+            (model && !model->validateAddress(ui->payTo->text())))
     {
         ui->payTo->setValid(false);
         retval = false;
@@ -164,7 +164,7 @@ void SendCoinsEntry::setFocus()
 
 void SendCoinsEntry::updateDisplayUnit()
 {
-    if(model && model->getOptionsModel())
+    if (model && model->getOptionsModel())
     {
         // Update payAmount with the current unit
         ui->payAmount->setDisplayUnit(model->getOptionsModel()->getDisplayUnit());

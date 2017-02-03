@@ -48,7 +48,7 @@ Value importprivkey(const Array& params, bool fHelp)
     CBitcoinSecret vchSecret;
     bool fGood = vchSecret.SetString(strSecret);
 
-    if (!fGood) throw JSONRPCError(-5,"Invalid private key");
+    if (!fGood) throw JSONRPCError(-5, "Invalid private key");
 
     CKey key;
     bool fCompressed;
@@ -62,7 +62,7 @@ Value importprivkey(const Array& params, bool fHelp)
         pwalletMain->SetAddressBookName(vchAddress, strLabel);
 
         if (!pwalletMain->AddKey(key))
-            throw JSONRPCError(-4,"Error adding key to wallet");
+            throw JSONRPCError(-4, "Error adding key to wallet");
 
         pwalletMain->ScanForWalletTransactions(pindexGenesisBlock, true);
         pwalletMain->ReacceptWalletTransactions();
@@ -75,19 +75,19 @@ Value dumpprivkey(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
-	    "dumpprivkey <goldcoinaddress>\n"
-	    "Reveals the private key corresponding to <goldcoinaddress>.");
+            "dumpprivkey <goldcoinaddress>\n"
+            "Reveals the private key corresponding to <goldcoinaddress>.");
 
     string strAddress = params[0].get_str();
     CBitcoinAddress address;
     if (!address.SetString(strAddress))
-	throw JSONRPCError(-5, "Invalid GoldCoin (GLD) address");
+        throw JSONRPCError(-5, "Invalid GoldCoin (GLD) address");
     CKeyID keyID;
     if (!address.GetKeyID(keyID))
         throw JSONRPCError(-3, "Address does not refer to a key");
     CSecret vchSecret;
     bool fCompressed;
     if (!pwalletMain->GetSecret(keyID, vchSecret, fCompressed))
-        throw JSONRPCError(-4,"Private key for address " + strAddress + " is not known");
+        throw JSONRPCError(-4, "Private key for address " + strAddress + " is not known");
     return CBitcoinSecret(vchSecret, fCompressed).ToString();
 }

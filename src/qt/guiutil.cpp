@@ -73,12 +73,12 @@ void setupAmountWidget(QLineEdit *widget, QWidget *parent)
     amountValidator->setDecimals(8);
     amountValidator->setBottom(0.0);
     widget->setValidator(amountValidator);
-    widget->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+    widget->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 }
 
 bool parseBitcoinURI(const QUrl &uri, SendCoinsRecipient *out)
 {
-    if(uri.scheme() != QString("goldcoin"))
+    if (uri.scheme() != QString("goldcoin"))
         return false;
 
     // check if the address is valid
@@ -106,9 +106,9 @@ bool parseBitcoinURI(const QUrl &uri, SendCoinsRecipient *out)
         }
         else if (i->first == "amount")
         {
-            if(!i->second.isEmpty())
+            if (!i->second.isEmpty())
             {
-                if(!BitcoinUnits::parse(BitcoinUnits::BTC, i->second, &rv.amount))
+                if (!BitcoinUnits::parse(BitcoinUnits::BTC, i->second, &rv.amount))
                 {
                     return false;
                 }
@@ -119,7 +119,7 @@ bool parseBitcoinURI(const QUrl &uri, SendCoinsRecipient *out)
         if (fShouldReturnFalse)
             return false;
     }
-    if(out)
+    if (out)
     {
         *out = rv;
     }
@@ -132,7 +132,7 @@ bool parseBitcoinURI(QString uri, SendCoinsRecipient *out)
     //
     //    Cannot handle this later, because goldcoin:// will cause Qt to see the part after // as host,
     //    which will lowercase it (and thus invalidate the address).
-    if(uri.startsWith("goldcoin://"))
+    if (uri.startsWith("goldcoin://"))
     {
         uri.replace(0, 11, "goldcoin:");
     }
@@ -143,7 +143,7 @@ bool parseBitcoinURI(QString uri, SendCoinsRecipient *out)
 QString HtmlEscape(const QString& str, bool fMultiLine)
 {
     QString escaped = Qt::escape(str);
-    if(fMultiLine)
+    if (fMultiLine)
     {
         escaped = escaped.replace("\n", "<br>\n");
     }
@@ -157,11 +157,11 @@ QString HtmlEscape(const std::string& str, bool fMultiLine)
 
 void copyEntryData(QAbstractItemView *view, int column, int role)
 {
-    if(!view || !view->selectionModel())
+    if (!view || !view->selectionModel())
         return;
     QModelIndexList selection = view->selectionModel()->selectedRows(column);
 
-    if(!selection.isEmpty())
+    if (!selection.isEmpty())
     {
         // Copy first item
         QApplication::clipboard()->setText(selection.at(0).data(role).toString());
@@ -169,13 +169,13 @@ void copyEntryData(QAbstractItemView *view, int column, int role)
 }
 
 QString getSaveFileName(QWidget *parent, const QString &caption,
-                                 const QString &dir,
-                                 const QString &filter,
-                                 QString *selectedSuffixOut)
+                        const QString &dir,
+                        const QString &filter,
+                        QString *selectedSuffixOut)
 {
     QString selectedFilter;
     QString myDir;
-    if(dir.isEmpty()) // Default to user documents location
+    if (dir.isEmpty()) // Default to user documents location
     {
         myDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     }
@@ -188,26 +188,26 @@ QString getSaveFileName(QWidget *parent, const QString &caption,
     /* Extract first suffix from filter pattern "Description (*.foo)" or "Description (*.foo *.bar ...) */
     QRegExp filter_re(".* \\(\\*\\.(.*)[ \\)]");
     QString selectedSuffix;
-    if(filter_re.exactMatch(selectedFilter))
+    if (filter_re.exactMatch(selectedFilter))
     {
         selectedSuffix = filter_re.cap(1);
     }
 
     /* Add suffix if needed */
     QFileInfo info(result);
-    if(!result.isEmpty())
+    if (!result.isEmpty())
     {
-        if(info.suffix().isEmpty() && !selectedSuffix.isEmpty())
+        if (info.suffix().isEmpty() && !selectedSuffix.isEmpty())
         {
             /* No suffix specified, add selected suffix */
-            if(!result.endsWith("."))
+            if (!result.endsWith("."))
                 result.append(".");
             result.append(selectedSuffix);
         }
     }
 
     /* Return selected suffix if asked to */
-    if(selectedSuffixOut)
+    if (selectedSuffixOut)
     {
         *selectedSuffixOut = selectedSuffix;
     }
@@ -216,7 +216,7 @@ QString getSaveFileName(QWidget *parent, const QString &caption,
 
 Qt::ConnectionType blockingGUIThreadConnection()
 {
-    if(QThread::currentThread() != QCoreApplication::instance()->thread())
+    if (QThread::currentThread() != QCoreApplication::instance()->thread())
     {
         return Qt::BlockingQueuedConnection;
     }
@@ -236,10 +236,10 @@ bool checkPoint(const QPoint &p, const QWidget *w)
 bool isObscured(QWidget *w)
 {
     return !(checkPoint(QPoint(0, 0), w)
-        && checkPoint(QPoint(w->width() - 1, 0), w)
-        && checkPoint(QPoint(0, w->height() - 1), w)
-        && checkPoint(QPoint(w->width() - 1, w->height() - 1), w)
-        && checkPoint(QPoint(w->width() / 2, w->height() / 2), w));
+             && checkPoint(QPoint(w->width() - 1, 0), w)
+             && checkPoint(QPoint(0, w->height() - 1), w)
+             && checkPoint(QPoint(w->width() - 1, w->height() - 1), w)
+             && checkPoint(QPoint(w->width() / 2, w->height() / 2), w));
 }
 
 void openDebugLogfile()
@@ -259,11 +259,11 @@ ToolTipToRichTextFilter::ToolTipToRichTextFilter(int size_threshold, QObject *pa
 
 bool ToolTipToRichTextFilter::eventFilter(QObject *obj, QEvent *evt)
 {
-    if(evt->type() == QEvent::ToolTipChange)
+    if (evt->type() == QEvent::ToolTipChange)
     {
         QWidget *widget = static_cast<QWidget*>(obj);
         QString tooltip = widget->toolTip();
-        if(tooltip.size() > size_threshold && !tooltip.startsWith("<qt/>") && !Qt::mightBeRichText(tooltip))
+        if (tooltip.size() > size_threshold && !tooltip.startsWith("<qt/>") && !Qt::mightBeRichText(tooltip))
         {
             // Prefix <qt/> to make sure Qt detects this as rich text
             // Escape the current message as HTML and replace \n by <br>
@@ -299,8 +299,8 @@ bool SetStartOnSystemStartup(bool fAutoStart)
         // Get a pointer to the IShellLink interface.
         IShellLink* psl = NULL;
         HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL,
-                                CLSCTX_INPROC_SERVER, IID_IShellLink,
-                                reinterpret_cast<void**>(&psl));
+                                        CLSCTX_INPROC_SERVER, IID_IShellLink,
+                                        reinterpret_cast<void**>(&psl));
 
         if (SUCCEEDED(hres))
         {
@@ -374,7 +374,7 @@ bool GetStartOnSystemStartup()
     {
         getline(optionFile, line);
         if (line.find("Hidden") != std::string::npos &&
-            line.find("true") != std::string::npos)
+                line.find("true") != std::string::npos)
             return false;
     }
     optionFile.close();
@@ -388,14 +388,14 @@ bool SetStartOnSystemStartup(bool fAutoStart)
         boost::filesystem::remove(GetAutostartFilePath());
     else
     {
-        char pszExePath[MAX_PATH+1];
+        char pszExePath[MAX_PATH + 1];
         memset(pszExePath, 0, sizeof(pszExePath));
-        if (readlink("/proc/self/exe", pszExePath, sizeof(pszExePath)-1) == -1)
+        if (readlink("/proc/self/exe", pszExePath, sizeof(pszExePath) - 1) == -1)
             return false;
 
         boost::filesystem::create_directories(GetAutostartDir());
 
-        boost::filesystem::ofstream optionFile(GetAutostartFilePath(), std::ios_base::out|std::ios_base::trunc);
+        boost::filesystem::ofstream optionFile(GetAutostartFilePath(), std::ios_base::out | std::ios_base::trunc);
         if (!optionFile.good())
             return false;
         // Write a goldcoin.desktop file to the autostart directory:
@@ -423,16 +423,16 @@ HelpMessageBox::HelpMessageBox(QWidget *parent) :
     QMessageBox(parent)
 {
     header = tr("GoldCoin-Qt") + " " + tr("version") + " " +
-        QString::fromStdString(FormatFullVersion()) + "\n\n" +
-        tr("Usage:") + "\n" +
-        "  goldcoin-qt [" + tr("command-line options") + "]                     " + "\n";
+             QString::fromStdString(FormatFullVersion()) + "\n\n" +
+             tr("Usage:") + "\n" +
+             "  goldcoin-qt [" + tr("command-line options") + "]                     " + "\n";
 
     coreOptions = QString::fromStdString(HelpMessage());
 
     uiOptions = tr("UI options") + ":\n" +
-        "  -lang=<lang>           " + tr("Set language, for example \"de_DE\" (default: system locale)") + "\n" +
-        "  -min                   " + tr("Start minimized") + "\n" +
-        "  -splash                " + tr("Show splash screen on startup (default: 1)") + "\n";
+                "  -lang=<lang>           " + tr("Set language, for example \"de_DE\" (default: system locale)") + "\n" +
+                "  -min                   " + tr("Start minimized") + "\n" +
+                "  -splash                " + tr("Show splash screen on startup (default: 1)") + "\n";
 
     setWindowTitle(tr("GoldCoin-Qt"));
     setTextFormat(Qt::PlainText);
@@ -451,11 +451,11 @@ void HelpMessageBox::printToConsole()
 void HelpMessageBox::showOrPrint()
 {
 #if defined(WIN32)
-        // On windows, show a message box, as there is no stderr/stdout in windowed applications
-        exec();
+    // On windows, show a message box, as there is no stderr/stdout in windowed applications
+    exec();
 #else
-        // On other operating systems, print help text to console
-        printToConsole();
+    // On other operating systems, print help text to console
+    printToConsole();
 #endif
 }
 

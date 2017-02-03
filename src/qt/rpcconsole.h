@@ -4,7 +4,7 @@
 #include <QDialog>
 
 namespace Ui {
-    class RPCConsole;
+class RPCConsole;
 }
 class ClientModel;
 

@@ -41,15 +41,15 @@ static QSplashScreen *splashref;
 static void ThreadSafeMessageBox(const std::string& message, const std::string& caption, int style)
 {
     // Message from network thread
-    if(guiref)
+    if (guiref)
     {
         bool modal = (style & CClientUIInterface::MODAL);
         // in case of modal message, use blocking connection to wait for user to click OK
         QMetaObject::invokeMethod(guiref, "error",
-                                   modal ? GUIUtil::blockingGUIThreadConnection() : Qt::QueuedConnection,
-                                   Q_ARG(QString, QString::fromStdString(caption)),
-                                   Q_ARG(QString, QString::fromStdString(message)),
-                                   Q_ARG(bool, modal));
+                                  modal ? GUIUtil::blockingGUIThreadConnection() : Qt::QueuedConnection,
+                                  Q_ARG(QString, QString::fromStdString(caption)),
+                                  Q_ARG(QString, QString::fromStdString(message)),
+                                  Q_ARG(bool, modal));
     }
     else
     {
@@ -60,33 +60,33 @@ static void ThreadSafeMessageBox(const std::string& message, const std::string& 
 
 static bool ThreadSafeAskFee(int64 nFeeRequired, const std::string& strCaption)
 {
-    if(!guiref)
+    if (!guiref)
         return false;
-    if(nFeeRequired < MIN_TX_FEE || nFeeRequired <= nTransactionFee || fDaemon)
+    if (nFeeRequired < MIN_TX_FEE || nFeeRequired <= nTransactionFee || fDaemon)
         return true;
     bool payFee = false;
 
     QMetaObject::invokeMethod(guiref, "askFee", GUIUtil::blockingGUIThreadConnection(),
-                               Q_ARG(qint64, nFeeRequired),
-                               Q_ARG(bool*, &payFee));
+                              Q_ARG(qint64, nFeeRequired),
+                              Q_ARG(bool*, &payFee));
 
     return payFee;
 }
 
 static void ThreadSafeHandleURI(const std::string& strURI)
 {
-    if(!guiref)
+    if (!guiref)
         return;
 
     QMetaObject::invokeMethod(guiref, "handleURI", GUIUtil::blockingGUIThreadConnection(),
-                               Q_ARG(QString, QString::fromStdString(strURI)));
+                              Q_ARG(QString, QString::fromStdString(strURI)));
 }
 
 static void InitMessage(const std::string &message)
 {
-    if(splashref)
+    if (splashref)
     {
-        splashref->showMessage(QString::fromStdString(message), Qt::AlignBottom|Qt::AlignHCenter, QColor(255,255,200));
+        splashref->showMessage(QString::fromStdString(message), Qt::AlignBottom | Qt::AlignHCenter, QColor(255, 255, 200));
         QApplication::instance()->processEvents();
     }
 }
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     // as it is used to locate QSettings)
     app.setOrganizationName("GoldCoin (GLD)");
     app.setOrganizationDomain("gldcoin.com");
-    if(GetBoolArg("-testnet")) // Separate UI settings for testnet
+    if (GetBoolArg("-testnet")) // Separate UI settings for testnet
         app.setApplicationName("GoldCoin-Qt-testnet");
     else
         app.setApplicationName("GoldCoin-Qt");
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
 
         BitcoinGUI window;
         guiref = &window;
-        if(AppInit2())
+        if (AppInit2())
         {
             {
                 // Put this in a block, so that the Model objects are cleaned up before
@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
                 window.setWalletModel(&walletModel);
 
                 // If -min option passed, start window minimized.
-                if(GetBoolArg("-min"))
+                if (GetBoolArg("-min"))
                 {
                     window.showMinimized();
                 }

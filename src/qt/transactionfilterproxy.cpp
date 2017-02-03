@@ -31,13 +31,13 @@ bool TransactionFilterProxy::filterAcceptsRow(int sourceRow, const QModelIndex &
     QString label = index.data(TransactionTableModel::LabelRole).toString();
     qint64 amount = llabs(index.data(TransactionTableModel::AmountRole).toLongLong());
 
-    if(!(TYPE(type) & typeFilter))
+    if (!(TYPE(type) & typeFilter))
         return false;
-    if(datetime < dateFrom || datetime > dateTo)
+    if (datetime < dateFrom || datetime > dateTo)
         return false;
     if (!address.contains(addrPrefix, Qt::CaseInsensitive) && !label.contains(addrPrefix, Qt::CaseInsensitive))
         return false;
-    if(amount < minAmount)
+    if (amount < minAmount)
         return false;
 
     return true;
@@ -75,7 +75,7 @@ void TransactionFilterProxy::setLimit(int limit)
 
 int TransactionFilterProxy::rowCount(const QModelIndex &parent) const
 {
-    if(limitRows != -1)
+    if (limitRows != -1)
     {
         return std::min(QSortFilterProxyModel::rowCount(parent), limitRows);
     }

@@ -28,7 +28,7 @@ template<unsigned int BITS>
 class base_uint
 {
 protected:
-    enum { WIDTH=BITS/32 };
+    enum { WIDTH = BITS / 32 };
     unsigned int pn[WIDTH];
 public:
 
@@ -111,10 +111,10 @@ public:
         shift = shift % 32;
         for (int i = 0; i < WIDTH; i++)
         {
-            if (i+k+1 < WIDTH && shift != 0)
-                pn[i+k+1] |= (a.pn[i] >> (32-shift));
-            if (i+k < WIDTH)
-                pn[i+k] |= (a.pn[i] << shift);
+            if (i + k + 1 < WIDTH && shift != 0)
+                pn[i + k + 1] |= (a.pn[i] >> (32 - shift));
+            if (i + k < WIDTH)
+                pn[i + k] |= (a.pn[i] << shift);
         }
         return *this;
     }
@@ -128,10 +128,10 @@ public:
         shift = shift % 32;
         for (int i = 0; i < WIDTH; i++)
         {
-            if (i-k-1 >= 0 && shift != 0)
-                pn[i-k-1] |= (a.pn[i] << (32-shift));
-            if (i-k >= 0)
-                pn[i-k] |= (a.pn[i] >> shift);
+            if (i - k - 1 >= 0 && shift != 0)
+                pn[i - k - 1] |= (a.pn[i] << (32 - shift));
+            if (i - k >= 0)
+                pn[i - k] |= (a.pn[i] >> shift);
         }
         return *this;
     }
@@ -175,7 +175,7 @@ public:
     {
         // prefix operator
         int i = 0;
-        while (++pn[i] == 0 && i < WIDTH-1)
+        while (++pn[i] == 0 && i < WIDTH - 1)
             i++;
         return *this;
     }
@@ -192,7 +192,7 @@ public:
     {
         // prefix operator
         int i = 0;
-        while (--pn[i] == -1 && i < WIDTH-1)
+        while (--pn[i] == -1 && i < WIDTH - 1)
             i++;
         return *this;
     }
@@ -208,7 +208,7 @@ public:
 
     friend inline bool operator<(const base_uint& a, const base_uint& b)
     {
-        for (int i = base_uint::WIDTH-1; i >= 0; i--)
+        for (int i = base_uint::WIDTH - 1; i >= 0; i--)
         {
             if (a.pn[i] < b.pn[i])
                 return true;
@@ -220,7 +220,7 @@ public:
 
     friend inline bool operator<=(const base_uint& a, const base_uint& b)
     {
-        for (int i = base_uint::WIDTH-1; i >= 0; i--)
+        for (int i = base_uint::WIDTH - 1; i >= 0; i--)
         {
             if (a.pn[i] < b.pn[i])
                 return true;
@@ -232,7 +232,7 @@ public:
 
     friend inline bool operator>(const base_uint& a, const base_uint& b)
     {
-        for (int i = base_uint::WIDTH-1; i >= 0; i--)
+        for (int i = base_uint::WIDTH - 1; i >= 0; i--)
         {
             if (a.pn[i] > b.pn[i])
                 return true;
@@ -244,7 +244,7 @@ public:
 
     friend inline bool operator>=(const base_uint& a, const base_uint& b)
     {
-        for (int i = base_uint::WIDTH-1; i >= 0; i--)
+        for (int i = base_uint::WIDTH - 1; i >= 0; i--)
         {
             if (a.pn[i] > b.pn[i])
                 return true;
@@ -288,10 +288,10 @@ public:
 
     std::string GetHex() const
     {
-        char psz[sizeof(pn)*2 + 1];
+        char psz[sizeof(pn) * 2 + 1];
         for (unsigned int i = 0; i < sizeof(pn); i++)
-            sprintf(psz + i*2, "%02x", ((unsigned char*)pn)[sizeof(pn) - i - 1]);
-        return std::string(psz, psz + sizeof(pn)*2);
+            sprintf(psz + i * 2, "%02x", ((unsigned char*)pn)[sizeof(pn) - i - 1]);
+        return std::string(psz, psz + sizeof(pn) * 2);
     }
 
     void SetHex(const char* psz)
@@ -308,7 +308,7 @@ public:
             psz += 2;
 
         // hex string to uint
-        static unsigned char phexdigit[256] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0, 0,0xa,0xb,0xc,0xd,0xe,0xf,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0xa,0xb,0xc,0xd,0xe,0xf,0,0,0,0,0,0,0,0,0 };
+        static unsigned char phexdigit[256] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         const char* pbegin = psz;
         while (phexdigit[(unsigned char)*psz] || *psz == '0')
             psz++;
@@ -317,10 +317,10 @@ public:
         unsigned char* pend = p1 + WIDTH * 4;
         while (psz >= pbegin && p1 < pend)
         {
-            *p1 = phexdigit[(unsigned char)*psz--];
+            *p1 = phexdigit[(unsigned char) * psz--];
             if (psz >= pbegin)
             {
-                *p1 |= (phexdigit[(unsigned char)*psz--] << 4);
+                *p1 |= (phexdigit[(unsigned char) * psz--] << 4);
                 p1++;
             }
         }
@@ -351,9 +351,9 @@ public:
         return sizeof(pn);
     }
 
-    uint64 Get64(int n=0) const
+    uint64 Get64(int n = 0) const
     {
-        return pn[2*n] | (uint64)pn[2*n+1] << 32;
+        return pn[2 * n] | (uint64)pn[2 * n + 1] << 32;
     }
 
 //    unsigned int GetSerializeSize(int nType=0, int nVersion=PROTOCOL_VERSION) const
@@ -713,7 +713,7 @@ inline int Testuint256AdHoc(std::vector<std::string> vArg)
     d = a;
 
     printf("%s\n", d.ToString().c_str());
-    for (int i = uint256::WIDTH-1; i >= 0; i--) printf("%08x", d.pn[i]); printf("\n");
+    for (int i = uint256::WIDTH - 1; i >= 0; i--) printf("%08x", d.pn[i]); printf("\n");
 
     uint256 neg = d;
     neg = ~neg;

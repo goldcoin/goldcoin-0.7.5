@@ -8,13 +8,13 @@
  */
 class BitcoinAddressValidator : public QValidator
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    explicit BitcoinAddressValidator(QObject *parent = 0);
+	explicit BitcoinAddressValidator(QObject *parent = 0);
 
-    State validate(QString &input, int &pos) const;
+	State validate(QString &input, int &pos) const;
 
-    static const int MaxAddressLength = 35;
+	static const int MaxAddressLength = 35;
 signals:
 
 public slots:

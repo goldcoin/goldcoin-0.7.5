@@ -22,7 +22,7 @@
 #define LONGPOLL 4
 
 namespace Ui {
-    class MiningPage;
+class MiningPage;
 }
 class ClientModel;
 

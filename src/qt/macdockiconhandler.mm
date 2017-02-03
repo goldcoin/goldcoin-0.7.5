@@ -24,10 +24,10 @@
         dockIconHandler = aDockIconHandler;
 
         [[NSAppleEventManager sharedAppleEventManager]
-            setEventHandler:self
-                andSelector:@selector(handleDockClickEvent:withReplyEvent:)
-              forEventClass:kCoreEventClass
-                 andEventID:kAEReopenApplication];
+         setEventHandler:self
+         andSelector:@selector(handleDockClickEvent:withReplyEvent:)
+         forEventClass:kCoreEventClass
+         andEventID:kAEReopenApplication];
     }
     return self;
 }
@@ -94,7 +94,7 @@ void MacDockIconHandler::setIcon(const QIcon &icon)
             }
         }
 
-        if(!image) {
+        if (!image) {
             // if testnet image could not be created, load std. app icon
             image = [[NSImage imageNamed:@"NSApplicationIcon"] retain];
         }

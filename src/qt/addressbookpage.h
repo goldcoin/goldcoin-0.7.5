@@ -4,7 +4,7 @@
 #include <QDialog>
 
 namespace Ui {
-    class AddressBookPage;
+class AddressBookPage;
 }
 class AddressTableModel;
 class OptionsModel;

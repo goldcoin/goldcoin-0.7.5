@@ -5,7 +5,7 @@
 #include <QImage>
 
 namespace Ui {
-    class QRCodeDialog;
+class QRCodeDialog;
 }
 class OptionsModel;
 

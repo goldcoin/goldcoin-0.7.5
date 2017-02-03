@@ -55,8 +55,8 @@ int64 CWalletDB::GetAccountCreditDebit(const string& strAccount)
     ListAccountCreditDebit(strAccount, entries);
 
     int64 nCreditDebit = 0;
-    BOOST_FOREACH (const CAccountingEntry& entry, entries)
-        nCreditDebit += entry.nCreditDebit;
+    BOOST_FOREACH (const CAccountingEntry & entry, entries)
+    nCreditDebit += entry.nCreditDebit;
 
     return nCreditDebit;
 }
@@ -74,7 +74,7 @@ void CWalletDB::ListAccountCreditDebit(const string& strAccount, list<CAccountin
         // Read next record
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         if (fFlags == DB_SET_RANGE)
-            ssKey << boost::make_tuple(string("acentry"), (fAllAccounts? string("") : strAccount), uint64(0));
+            ssKey << boost::make_tuple(string("acentry"), (fAllAccounts ? string("") : strAccount), uint64(0));
         CDataStream ssValue(SER_DISK, CLIENT_VERSION);
         int ret = ReadAtCursor(pcursor, ssKey, ssValue, fFlags);
         fFlags = DB_NEXT;
@@ -253,7 +253,7 @@ int CWalletDB::LoadWallet(CWallet* pwallet)
                 ssKey >> nID;
                 CMasterKey kMasterKey;
                 ssValue >> kMasterKey;
-                if(pwallet->mapMasterKeys.count(nID) != 0)
+                if (pwallet->mapMasterKeys.count(nID) != 0)
                 {
                     printf("Error reading wallet database: duplicate CMasterKey id %u\n", nID);
                     return DB_CORRUPT;
@@ -308,7 +308,7 @@ int CWalletDB::LoadWallet(CWallet* pwallet)
     }
 
     BOOST_FOREACH(uint256 hash, vWalletUpgrade)
-        WriteTx(hash, pwallet->mapWallet[hash]);
+    WriteTx(hash, pwallet->mapWallet[hash]);
 
     printf("nFileVersion = %d\n", nFileVersion);
 
@@ -351,7 +351,7 @@ void ThreadFlushWalletDB(void* parg)
 
         if (nLastFlushed != nWalletDBUpdated && GetTime() - nLastWalletUpdate >= 2)
         {
-            TRY_LOCK(bitdb.cs_db,lockDb);
+            TRY_LOCK(bitdb.cs_db, lockDb);
             if (lockDb)
             {
                 // Don't do this if any databases are in use
@@ -414,7 +414,7 @@ bool BackupWallet(const CWallet& wallet, const string& strDest)
 #endif
                     printf("copied wallet.dat to %s\n", pathDest.string().c_str());
                     return true;
-                } catch(const filesystem::filesystem_error &e) {
+                } catch (const filesystem::filesystem_error &e) {
                     printf("error copying wallet.dat to %s - %s\n", pathDest.string().c_str(), e.what());
                     return false;
                 }

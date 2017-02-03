@@ -39,12 +39,12 @@ void GetMessageStart(unsigned char pchMessageStart[], bool fPersistent)
     /*if (fTestNet)
         memcpy(pchMessageStart, (fPersistent || GetAdjustedTime() > nMessageStartTestSwitchTime)? pchMessageStartTestNew : pchMessageStartTestOld, sizeof(pchMessageStartTestNew));
     else*/
-        memcpy(pchMessageStart, pchMessageStartGoldCoin, sizeof(pchMessageStartGoldCoin));
+    memcpy(pchMessageStart, pchMessageStartGoldCoin, sizeof(pchMessageStartGoldCoin));
 }
 
 void GetMessageStart2(unsigned char pchMessageStart[])
 {
-	memcpy(pchMessageStart, pchMessageStartLiteCoin, sizeof(pchMessageStartGoldCoin));
+    memcpy(pchMessageStart, pchMessageStartLiteCoin, sizeof(pchMessageStartGoldCoin));
 }
 
 static const char* ppszTypeName[] =
@@ -56,7 +56,7 @@ static const char* ppszTypeName[] =
 
 CMessageHeader::CMessageHeader()
 {
-	GetMessageStart(pchMessageStart);
+    GetMessageStart(pchMessageStart);
     memset(pchCommand, 0, sizeof(pchCommand));
     pchCommand[1] = 1;
     nMessageSize = -1;
@@ -65,7 +65,7 @@ CMessageHeader::CMessageHeader()
 
 CMessageHeader::CMessageHeader(bool meaninglessVar)
 {
-	//GetMessageStart2(pchMessageStart);
+    //GetMessageStart2(pchMessageStart);
     memset(pchCommand, 0, sizeof(pchCommand));
     pchCommand[1] = 1;
     nMessageSize = -1;
@@ -82,7 +82,7 @@ CMessageHeader::CMessageHeader(const char* pszCommand, unsigned int nMessageSize
 
 std::string CMessageHeader::GetCommand() const
 {
-    if (pchCommand[COMMAND_SIZE-1] == 0)
+    if (pchCommand[COMMAND_SIZE - 1] == 0)
         return std::string(pchCommand, pchCommand + strlen(pchCommand));
     else
         return std::string(pchCommand, pchCommand + COMMAND_SIZE);
@@ -90,12 +90,12 @@ std::string CMessageHeader::GetCommand() const
 
 bool CMessageHeader::IsValid() const
 {
-	// Check start string
+    // Check start string
     unsigned char pchMessageStartProtocol[4];
     GetMessageStart(pchMessageStartProtocol);
     //if (memcmp(pchMessageStart, ::pchMessageStart, sizeof(pchMessageStart)) != 0 && memcmp(pchMessageStart2, ::pchMessageStart2, sizeof(pchMessageStart2)) != 0)
     if (memcmp(pchMessageStart, pchMessageStartProtocol, sizeof(pchMessageStart)) != 0 && memcmp(pchMessageStart, pchMessageStartLiteCoin, sizeof(pchMessageStart)) != 0)
-		return false;
+        return false;
 
     // Check the command string for errors
     for (const char* p1 = pchCommand; p1 < pchCommand + COMMAND_SIZE; p1++)
@@ -188,7 +188,7 @@ const char* CInv::GetCommand() const
 
 std::string CInv::ToString() const
 {
-    return strprintf("%s %s", GetCommand(), hash.ToString().substr(0,20).c_str());
+    return strprintf("%s %s", GetCommand(), hash.ToString().substr(0, 20).c_str());
 }
 
 void CInv::print() const
