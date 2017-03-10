@@ -30,17 +30,15 @@ install DVD, but if not, you can get the current version from https://developer.
 
 git clone https://github.com/goldcoin/gldcoin.git
 
-2.  Download and install MacPorts from http://www.macports.org/
+2.  Download and install homebrew from https://brew.sh or use this command in Terminal:
+		/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
-2a. (for 10.7 Lion or higher)
-    Edit /opt/local/etc/macports/macports.conf and uncomment "build_arch i386"
+3.  Install dependencies from homebrew
 
-3.  Install dependencies from MacPorts
-
-sudo port install boost db48 openssl miniupnpc
+sudo brew install boost db48 openssl miniupnpc 
 
 Optionally install qrencode (and set USE_QRCODE=1):
-sudo port install qrencode
+sudo brew install qrencode
 
 4.  Now you should be able to build gldcoind:
 
@@ -49,7 +47,7 @@ cd gldcoin/src
 
 or
 
-make -f makefile.osx USE_IPV6=1 USE_UPNP=1 USE_QRCODE=1 32BIT=1 RELEASE=1 STATIC=1
+make -f makefile.osx USE_IPV6=1 USE_UPNP=1 USE_QRCODE=1 64BIT=1 RELEASE=1 STATIC=1
 
 Note: You cannot use both 64BIT=1 and 32BIT=1, as it will simply default to 32BIT
 
@@ -64,43 +62,7 @@ Run
 
 Build with .pro mac file.
 
-Now copy libssl dylib and libcrypto dylib from /usr/local/Cellar/openssl/1.0.2a-1/lib
-to the frameworks directory in the .app folder
-
-Now copy libqrencode dylib from /usr/local/Cellar/qrencode/3.4.4/lib to frameworks directory in the .app folder
-
-Now copy
-
-libstdc++.6.dylib
-
-libSystem.B.dylib
-
-libgcc_s.1.dylib
-and
-libobjc.A.dylib
-
-from /usr/lib
-
-to the frameworks directory
-
 sudo macdeployqt GoldCoin-Qt.app -dmg -verbose=1
 
 Delete the .dmg file
 
-install_name_tool -change "/opt/local/lib/db48/libdb_cxx-4.8.dylib" "@executable_path/../Frameworks/libdb_cxx-4.8.dylib" GoldCoin-Qt.app/Contents/MacOS/GoldCoin-Qt
-
-install_name_tool -change "/usr/lib/libssl.0.9.8.dylib" "@executable_path/../Frameworks/libssl.1.0.0.dylib" GoldCoin-Qt.app/Contents/MacOS/GoldCoin-Qt
-
-install_name_tool -change "/usr/lib/libcrypto.0.9.8.dylib" "@executable_path/../Frameworks/libcrypto.1.0.0.dylib" GoldCoin-Qt.app/Contents/MacOS/GoldCoin-Qt
-
-install_name_tool -change "/usr/lib/libcrypto.0.9.8.dylib" "@executable_path/../Frameworks/libcrypto.1.0.0.dylib" GoldCoin-Qt.app/Contents/MacOS/GoldCoin-Qt
-
-install_name_tool -change "/usr/lib/libstdc++.6.dylib" "@executable_path/../Frameworks/libstdc++.6.0.9.dylib" GoldCoin-Qt.app/Contents/MacOS/GoldCoin-Qt
-
-install_name_tool -change "/usr/lib/libSystem.B.dylib" "@executable_path/../Frameworks/libSystem.B.dylib" GoldCoin-Qt.app/Contents/MacOS/GoldCoin-Qt
-
-install_name_tool -change "/usr/lib/libgcc_s.1.dylib" "@executable_path/../Frameworks/libSystem.B.dylib" GoldCoin-Qt.app/Contents/MacOS/GoldCoin-Qt
-
-install_name_tool -change "/usr/lib/libobjc.A.dylib" "@executable_path/../Frameworks/libobjc.A.dylib" GoldCoin-Qt.app/Contents/MacOS/GoldCoin-Qt
-
-The use the dmg creator file to make the dmg image

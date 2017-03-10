@@ -6,18 +6,21 @@
 # Mac OS X makefile for goldcoin
 # Originally by Laszlo Hanyecz (solar@heliacal.net)
 
-CXX=llvm-g++
-DEPSDIR=/opt/local
+CXX=clang++ #llvm-g++
+DEPSDIR=/usr/local
 
 INCLUDEPATHS= \
  -I"$(CURDIR)" \
  -I"$(CURDIR)"/obj \
  -I"$(DEPSDIR)/include" \
- -I"$(DEPSDIR)/include/db48"
+ -I"$(DEPSDIR)/opt/openssl/include/" \
+ -I"$(DEPSDIR)/opt/berkeley-db@4/include/" \
+ -I"/Users/hashengineering/Development/Packages/Qt5.8.0_static_osx/include/"
 
 LIBPATHS= \
  -L"$(DEPSDIR)/lib" \
- -L"$(DEPSDIR)/lib/db48"
+ -L"$(DEPSDIR)/opt/berkeley-db@4/lib/" \
+ -L"$(DEPSDIR)/opt/openssl/lib/"
 
 USE_UPNP:=1
 USE_IPV6:=1
@@ -31,14 +34,16 @@ ifdef STATIC
 TESTLIBS += \
  $(DEPSDIR)/lib/libboost_unit_test_framework-mt.a
 LIBS += \
- $(DEPSDIR)/lib/db48/libdb_cxx-4.8.a \
- $(DEPSDIR)/lib/libboost_system-mt.a \
- $(DEPSDIR)/lib/libboost_filesystem-mt.a \
- $(DEPSDIR)/lib/libboost_program_options-mt.a \
- $(DEPSDIR)/lib/libboost_thread-mt.a \
- $(DEPSDIR)/lib/libssl.a \
- $(DEPSDIR)/lib/libcrypto.a \
- -lz
+ $(DEPSDIR)/opt/berkeley-db@4/lib/libdb_cxx-4.8.a \
+ $(DEPSDIR)/opt/boost/lib/libboost_system-mt.a \
+ $(DEPSDIR)/opt/boost/lib/libboost_filesystem-mt.a \
+ $(DEPSDIR)/opt/boost/lib/libboost_program_options-mt.a \
+ $(DEPSDIR)/opt/boost/lib/libboost_thread-mt.a \
+ $(DEPSDIR)/opt/openssl/lib/libssl.a \
+ $(DEPSDIR)/opt/openssl/lib/libcrypto.a \
+ /Users/hashengineering/Development/Packages/Qt5.8.0_static_osx/lib/libQt5Core.a \
+ -lz \
+ -lc++
 else
 TESTLIBS += \
  -lboost_unit_test_framework-mt
@@ -50,7 +55,9 @@ LIBS += \
  -lboost_thread-mt \
  -lssl \
  -lcrypto \
- -lz
+ -lz \
+ -lQtCore \
+ -lc++
 TESTDEFS += -DBOOST_TEST_DYN_LINK
 endif
 
@@ -62,11 +69,11 @@ ifdef 32BIT
 # the same way.
 # choose either 64BIT or 32BIT but not both!
 	CFLAGS = -arch i386 -O3
-	CXX +=  -m32
+	CXX +=  -m32 -std=c++0x -stdlib=libc++
 else
 	ifdef 64BIT
 		CFLAGS = -arch x86_64 -O3
-	CXX +=  -m64
+		CXX +=  -m64 -std=c++0x -stdlib=libc++
 	else
 		CFLAGS = -g
 	endif
@@ -74,7 +81,7 @@ endif
 
 
 ifdef RELEASE
-	CFLAGS += -mmacosx-version-min=10.6
+	CFLAGS += -mmacosx-version-min=10.12
 else
 endif
 
@@ -137,7 +144,7 @@ obj/build.h: FORCE
 version.cpp: obj/build.h
 DEFS += -DHAVE_BUILD_INFO
 
-obj/%.o: %.cpp
+obj/%.o: %.cpp    
 	$(CXX) -c $(CFLAGS) -MMD -MF $(@:%.o=%.d) -o $@ $<
 	@cp $(@:%.o=%.d) $(@:%.o=%.P); \
 	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
