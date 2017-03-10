@@ -1,4 +1,4 @@
-TEMPLATE = app
+macx:TEMPLATE = app
 TARGET = goldcoin-qt
 macx:TARGET = "GoldCoin-Qt"
 VERSION = 0.7.1.8
@@ -20,6 +20,9 @@ CONFIG += static
 # Dependency library locations can be customized with:
 #    BOOST_INCLUDE_PATH, BOOST_LIB_PATH, BDB_INCLUDE_PATH,
 #    BDB_LIB_PATH, OPENSSL_INCLUDE_PATH and OPENSSL_LIB_PATH respectively
+
+macx:MINIUPNPC_INCLUDE_PATH= /usr/local/opt/miniupnpc/include
+macx:MINIUPNPC_LIB_PATH= /usr/local/opt/miniupnpc/lib
 
 OBJECTS_DIR = build
 MOC_DIR = build
@@ -323,7 +326,7 @@ isEmpty(BOOST_THREAD_LIB_SUFFIX) {
 }
 
 isEmpty(BDB_LIB_PATH) {
-    macx:BDB_LIB_PATH = /usr/local/Cellar/berkeley-db4/4.8.30/lib
+    macx:BDB_LIB_PATH = /usr/local/opt/berkeley-db@4/lib
 }
 
 isEmpty(BDB_LIB_SUFFIX) {
@@ -331,17 +334,29 @@ isEmpty(BDB_LIB_SUFFIX) {
 }
 
 isEmpty(BDB_INCLUDE_PATH) {
-    macx:BDB_INCLUDE_PATH = /usr/local/Cellar/berkeley-db4/4.8.30/include
+    macx:BDB_INCLUDE_PATH = /usr/local/opt/berkeley-db@4/include
 }
 
 isEmpty(BOOST_LIB_PATH) {
-    macx:BOOST_LIB_PATH = /usr/local/Cellar/boost/1.58.0/lib
+    macx:BOOST_LIB_PATH = /usr/local/opt/boost/lib
 }
 
 isEmpty(BOOST_INCLUDE_PATH) {
-    macx:BOOST_INCLUDE_PATH = /usr/local/Cellar/boost/1.58.0/include
+    macx:BOOST_INCLUDE_PATH = /usr/local/opt/boost/include
 }
 
+isEmpty(OPENSSL_INCLUDE_PATH) {
+    macx:OPENSSL_INCLUDE_PATH = /usr/local/opt/openssl/include
+}
+isEmpty(OPENSSL_LIB_PATH) {
+    macx:OPENSSL_LIB_PATH = /usr/local/opt/openssl/lib
+}
+isEmpty(QRENCODE_INCLUDE_PATH) {
+    macx:QRENCODE_INCLUDE_PATH = /usr/local/opt/qrencode/include
+}
+isEmpty(QRENCODE_LIB_PATH) {
+    macx:QRENCODE_LIB_PATH = /usr/local/opt/qrencode/lib
+}
 win32:DEFINES += WIN32
 win32:RC_FILE = src/qt/res/bitcoin-qt.rc
 
@@ -372,7 +387,7 @@ macx:QMAKE_CFLAGS_THREAD += -pthread
 macx:QMAKE_LFLAGS_THREAD += -pthread
 macx:QMAKE_LFLAGS_THREAD += -undefined dynamic_lookup
 macx:QMAKE_LFLAGS_THREAD += -rdynamic
-macs:QMAKE_LFLAGS_THREAD += -headerpad_max_install_names
+macx:QMAKE_LFLAGS_THREAD += -headerpad_max_install_names
 macx:QMAKE_CXXFLAGS_THREAD += -pthread
 #macx:QMAKE_INFO_PLIST = share/qt/Info.plist
 
