@@ -14,7 +14,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <math.h>
-#include <qdatetime.h>
+#include <QtCore/QDateTime>
 #include <time.h>
 #include <stdlib.h>
 #include <boost/make_shared.hpp>
@@ -589,7 +589,7 @@ bool CTxMemPool::accept(CTxDB& txdb, CTransaction &tx, bool fCheckInputs,
 		// Don't accept it if it can't get into a block
 		int64 txMinFee = tx.GetMinFee(1000, true, GMF_RELAY);
 		if (nFees < txMinFee)
-			return error("CTxMemPool::accept() : not enough fees %s, %"PRI64d" < %"PRI64d,
+            return error("CTxMemPool::accept() : not enough fees %s, %"  PRI64d  " < %"  PRI64d ,
 			             hash.ToString().c_str(),
 			             nFees, txMinFee);
 
@@ -1045,7 +1045,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
 		// Limit adjustment step
 		int64 nActualTimespan = pindexLast->GetBlockTime() - pindexFirst->GetBlockTime();
-		printf("  nActualTimespan = %"PRI64d"  before bounds\n", nActualTimespan);
+        printf("  nActualTimespan = %" PRI64d "  before bounds\n", nActualTimespan);
 		int64 nActualTimespanMax = fNewDifficultyProtocol ? ((nTargetTimespan2Current * 99) / 70) : (nTargetTimespan2Current * 4);
 		int64 nActualTimespanMin = fNewDifficultyProtocol ? ((nTargetTimespan2Current * 70) / 99) : (nTargetTimespan2Current / 4);
 		if (nActualTimespan < nActualTimespanMin)
@@ -1062,7 +1062,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
 		/// debug print
 		printf("GetNextWorkRequired RETARGET\n");
-		printf("nTargetTimespan2 = %"PRI64d"    nActualTimespan = %"PRI64d"\n", nTargetTimespan2Current, nActualTimespan);
+        printf("nTargetTimespan2 = %" PRI64d "    nActualTimespan = %" PRI64d "\n", nTargetTimespan2Current, nActualTimespan);
 		printf("Before: %08x  %s\n", pindexLast->nBits, CBigNum().SetCompact(pindexLast->nBits).getuint256().ToString().c_str());
 		printf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
 	} else if (nHeight > novemberFork) {
@@ -1134,7 +1134,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
 		sort(last59TimeDifferences.begin(), last59TimeDifferences.end(), comp64);
 
-		printf("  Median Time between blocks is: %"PRI64d" \n", last59TimeDifferences[29]);
+        printf("  Median Time between blocks is: %" PRI64d " \n", last59TimeDifferences[29]);
 		int64 nActualTimespan = llabs((last59TimeDifferences[29]));
 		int64 medTime = nActualTimespan;
 
@@ -1175,22 +1175,22 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
 			for (int x = 0; x < 119; x++) {
 				int64 timeN = last119TimeDifferences[x];
-				//printf(" GetNextWorkRequired(): Current Time difference is: %"PRI64d" \n",timeN);
+                //printf(" GetNextWorkRequired(): Current Time difference is: %" PRI64d " \n",timeN);
 				total += timeN;
 			}
 
 			averageTime = total / 119;
 
 
-			printf(" GetNextWorkRequired(): Average time between blocks over the last 120 blocks is: %"PRI64d" \n", averageTime);
-			/*printf(" GetNextWorkRequired(): Total Time (over 119 time differences) is: %"PRI64d" \n",total);
-			printf(" GetNextWorkRequired(): First Time (over 119 time differences) is: %"PRI64d" \n",last119TimeDifferences[0]);
+            printf(" GetNextWorkRequired(): Average time between blocks over the last 120 blocks is: %" PRI64d " \n", averageTime);
+            /*printf(" GetNextWorkRequired(): Total Time (over 119 time differences) is: %" PRI64d " \n",total);
+            printf(" GetNextWorkRequired(): First Time (over 119 time differences) is: %" PRI64d " \n",last119TimeDifferences[0]);
 			printf(" GetNextWorkRequired(): Last Time (over 119 time differences) is: %"PRI64d" \n",last119TimeDifferences[118]);
 			printf(" GetNextWorkRequired(): Last Time is: %"PRI64d" \n",last120BlockTimes[119]);
 			printf(" GetNextWorkRequired(): 2nd Last Time is: %"PRI64d" \n",last120BlockTimes[118]);
 
-			printf(" GetNextWorkRequired(): First Time is: %"PRI64d" \n",last120BlockTimes[0]);
-			printf(" GetNextWorkRequired(): 2nd Time is: %"PRI64d" \n",last120BlockTimes[1]);*/
+            printf(" GetNextWorkRequired(): First Time is: %" PRI64d " \n",last120BlockTimes[0]);
+            printf(" GetNextWorkRequired(): 2nd Time is: %" PRI64d " \n",last120BlockTimes[1]);*/
 
 			if (nHeight <= julyFork2) {
 				//If the average time between blocks exceeds or is equal to 3 minutes then increase the med time accordingly
@@ -1299,7 +1299,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
 			nActualTimespan = medTime * 60;
 
-			printf("  nActualTimespan = %"PRI64d"  before bounds\n", nActualTimespan);
+            printf("  nActualTimespan = %" PRI64d "  before bounds\n", nActualTimespan);
 			int64 nActualTimespanMax = fNewDifficultyProtocol ? ((nTargetTimespanCurrent * 99) / 70) : (nTargetTimespanCurrent * 4);
 			int64 nActualTimespanMin = fNewDifficultyProtocol ? ((nTargetTimespanCurrent * 70) / 99) : (nTargetTimespanCurrent / 4);
 			if (nActualTimespan < nActualTimespanMin)
@@ -1398,7 +1398,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
 		/// debug print
 		printf("GetNextWorkRequired RETARGET\n");
-		printf("nTargetTimespan = %"PRI64d"    nActualTimespan = %"PRI64d"\n", nTargetTimespanCurrent, nActualTimespan);
+        printf("nTargetTimespan = %" PRI64d "    nActualTimespan = %" PRI64d "\n", nTargetTimespanCurrent, nActualTimespan);
 		printf("Before: %08x  %s\n", pindexLast->nBits, CBigNum().SetCompact(pindexLast->nBits).getuint256().ToString().c_str());
 		printf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
 	} else {
@@ -1442,7 +1442,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
 		// Limit adjustment step
 		int64 nActualTimespan = pindexLast->GetBlockTime() - pindexFirst->GetBlockTime();
-		printf("  nActualTimespan = %"PRI64d"  before bounds\n", nActualTimespan);
+        printf("  nActualTimespan = %" PRI64d "  before bounds\n", nActualTimespan);
 		int64 nActualTimespanMax = fNewDifficultyProtocol ? ((nTargetTimespanCurrent * 99) / 70) : (nTargetTimespanCurrent * 4);
 		int64 nActualTimespanMin = fNewDifficultyProtocol ? ((nTargetTimespanCurrent * 70) / 99) : (nTargetTimespanCurrent / 4);
 		if (nActualTimespan < nActualTimespanMin)
@@ -1459,7 +1459,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
 		/// debug print
 		printf("GetNextWorkRequired RETARGET\n");
-		printf("nTargetTimespan = %"PRI64d"    nActualTimespan = %"PRI64d"\n", nTargetTimespanCurrent, nActualTimespan);
+        printf("nTargetTimespan = %" PRI64d "    nActualTimespan = %" PRI64d "\n", nTargetTimespanCurrent, nActualTimespan);
 		printf("Before: %08x  %s\n", pindexLast->nBits, CBigNum().SetCompact(pindexLast->nBits).getuint256().ToString().c_str());
 		printf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString().c_str());
 	}
@@ -1529,10 +1529,12 @@ int64 getNextMinTime(const CBlockIndex* pindexPrev) {
 		CBlock nBlock;
 		nBlock.ReadFromDisk(mapBlockIndex[pindexPrev->GetBlockHash()]);//1 +
 		if (CBlock* theBlock = getPreviousBlock(&nBlock, 4).get()) // 4 = 5
-			if (QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(minTime)) < (60 * 10)) {
+            if (QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(minTime)) < (60 * 10)) {
+            //if ((minTime - theBlock->GetBlockTime()) < (60 * 10)) {
 				//This minTime triggers the defense, so we need to find set the mintime such that the defense is not triggered
-				minTime += (60 * 10) - QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(minTime));
-				//Adding the difference between the current timespan and the needed timespan to minTime should get us the exact time needed that won't trigger the 51% defense
+                minTime += (60 * 10) - QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(minTime));
+                //minTime += (60 * 10) - minTime - theBlock->GetBlockTime();
+                //Adding the difference between the current timespan and the needed timespan to minTime should get us the exact time needed that won't trigger the 51% defense
 				//return error("\n ProcessBlock() : Possible Multipeer 51 percent detected, initiating anti-legit-peerban defense! halting until valid block! This is normal.. \n");
 			}
 	}
@@ -2337,11 +2339,14 @@ bool CBlock::CheckBlock(CNode* pfrom) const
 			CBlock nBlock;
 			nBlock.ReadFromDisk(mapBlockIndex[hashPrevBlock]);//1 +
 			if (boost::shared_ptr<CBlock> theBlock = getPreviousBlock(&nBlock, 4)) // 4 = 5
-				if (QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60 * 10)) {
+                if (QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60 * 10)) {
+                //if ((GetBlockTime() - theBlock->GetBlockTime()) < (60 * 10)) {
 					//The block is too far into the future but still not far enough to pass the 51% defense
 					//Thus it is useless and will be rejected
-					return error("CheckBlock() : block timestamp too far in the future 2, Seconds between blocks is: %d", QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())));
-				} else if (QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60 * 10 + 600) && !dontWaitForBlockStamp) {
+                    //return error("CheckBlock() : block timestamp too far in the future 2, Seconds between blocks is: %d", QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())));
+                    return error("CheckBlock() : block timestamp too far in the future 2, Seconds between blocks is: %d", GetBlockTime() - theBlock->GetBlockTime());
+                } else if (QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60 * 10 + 600) && !dontWaitForBlockStamp) {
+                //} else if (GetBlockTime() - theBlock->GetBlockTime()) < (60 * 10 + 600) && !dontWaitForBlockStamp) {
 					//A valid block has been found but the current network adjusted time will not permit it to be accepted by other peers
 					//Thus we hold the block until GetAdjustedTime() is such that if(GetBlockTime() > GetAdjustedTime() + 45) is false
 					printf("Local has found possible valid block... queueing until timestamp is valid \n");
@@ -2455,7 +2460,8 @@ bool CBlock::AcceptBlock()
 		CBlock nBlock;
 		nBlock.ReadFromDisk(mapBlockIndex[hashPrevBlock]);//1 +
 		if (CBlock* theBlock = getPreviousBlock(&nBlock, 4).get()) // 4 = 5
-			if (QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60 * 10)) {
+            if (QDateTime::fromTime_t(theBlock->GetBlockTime()).secsTo(QDateTime::fromTime_t(GetBlockTime())) < (60 * 10)) {
+            //if ((GetBlockTime() - theBlock->GetBlockTime()) < (60 * 10)) {
 				return error("\n AcceptBlock() : Possible Multipeer 51 percent detected, Denying chain switch.. \n");
 			}
 	}
@@ -2700,7 +2706,7 @@ static unsigned int nCurrentBlockFile = 1;
 FILE* AppendBlockFile(unsigned int& nFileRet)
 {
 	nFileRet = 0;
-	loop
+    _loop
 	{
 		FILE* file = OpenBlockFile(nCurrentBlockFile, 0, "ab");
 		if (!file)
@@ -2790,7 +2796,7 @@ bool LoadBlockIndex(bool fAllowNew)
 			uint256 thash;
 			char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
 
-			loop
+            _loop
 			{
 				scrypt_1024_1_1_256_sp(BEGIN(block.nVersion), BEGIN(thash), scratchpad);
 				if (thash <= hashTarget)
@@ -3845,12 +3851,12 @@ bool ProcessMessages(CNode* pfrom)
 	{
 		string strMessageStart((const char *)pchMessageStart, sizeof(pchMessageStart));
 		vector<unsigned char> vchMessageStart(strMessageStart.begin(), strMessageStart.end());
-		printf("ProcessMessages : AdjustedTime=%"PRI64d" MessageStart=%s\n", GetAdjustedTime(), HexStr(vchMessageStart).c_str());
+        printf("ProcessMessages : AdjustedTime=%" PRI64d " MessageStart=%s\n", GetAdjustedTime(), HexStr(vchMessageStart).c_str());
 		nTimeLastPrintMessageStart = GetAdjustedTime();
 	}
 	int test = 0;//determines which state we are in
 
-	loop
+    _loop
 	{
 		// Don't bother if send buffer is too full to respond anyway
 		if (pfrom->vSend.size() >= SendBufferSize())
@@ -4338,7 +4344,7 @@ CBlock* CreateNewBlock(CReserveKey& reservekey)
 				dPriority += (double)nValueIn * nConf;
 
 				if (fDebug && GetBoolArg("-printpriority"))
-					printf("priority     nValueIn=%-12"PRI64d" nConf=%-5d dPriority=%-20.1f\n", nValueIn, nConf, dPriority);
+                    printf("priority     nValueIn=%-12" PRI64d " nConf=%-5d dPriority=%-20.1f\n", nValueIn, nConf, dPriority);
 			}
 
 			// Priority is sum(valuein * age) / txsize
@@ -4612,7 +4618,7 @@ void static BitcoinMiner(CWallet *pwallet)
 		//
 		int64 nStart = GetTime();
 		uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
-		loop
+        _loop
 		{
 			unsigned int nHashesDone = 0;
 			//unsigned int nNonceFound;
@@ -4622,7 +4628,7 @@ void static BitcoinMiner(CWallet *pwallet)
 
 			uint256 thash;
 			char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
-			loop
+            _loop
 			{
 				scrypt_1024_1_1_256_sp(BEGIN(pblock->nVersion), BEGIN(thash), scratchpad);
 

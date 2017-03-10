@@ -30,7 +30,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/shared_ptr.hpp>
 #include <list>
-#include <qdatetime.h>
+#include <QtCore/QDateTime>
 
 #define printf OutputDebugStringF
 
@@ -2736,7 +2736,7 @@ int ReadHTTPStatus(std::basic_istream<char>& stream, int &proto)
 int ReadHTTPHeader(std::basic_istream<char>& stream, map<string, string>& mapHeadersRet)
 {
     int nLen = 0;
-    loop
+    _loop
     {
         string str;
         std::getline(stream, str);
@@ -3291,7 +3291,7 @@ void ThreadRPCServer3(void* parg)
     AcceptedConnection *conn = (AcceptedConnection *) parg;
 
     bool fRun = true;
-    loop {
+    _loop {
         if (fShutdown || !fRun)
         {
             conn->close();
