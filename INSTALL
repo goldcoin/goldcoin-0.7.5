@@ -1,9 +1,9 @@
-Building GLDCoin
+Building GoldCoin
 
-See doc/readme-qt.rst for instructions on building GLDCoin-QT,
+See doc/readme-qt.rst for instructions on building GoldCoin-QT,
 the intended-for-end-users, nice-graphical-interface, reference
-implementation of GLDCoin.
+implementation of GoldCoin.
 
-See doc/build-*.txt for instructions on building gldcoind,
+See doc/build-*.txt for instructions on building gildcoind,
 the intended-for-services, no-graphical-interface, reference
-implementation of GLDCoin.
+implementation of GoldCoin.
