@@ -21,7 +21,7 @@
 // Public testnet message start
 // unsigned char pchMessageStartTestBitcoin[4] = { 0xfa, 0xbf, 0xb5, 0xda };
 //static unsigned char pchMessageStartTestOld[4] = { 0xdb, 0xe1, 0xf2, 0xf6 };
-//static unsigned char pchMessageStartTestNew[4] = { 0xcb, 0xf2, 0xc0, 0xef };
+static unsigned char pchMessageStartTestNew[4] = { 0xfc, 0xc5, 0xb4, 0xdd };
 //static unsigned int nMessageStartTestSwitchTime = 1346200000;
 
 // GoldCoin message start (switch from Litecoin's in v0.69)
@@ -36,10 +36,10 @@ static unsigned char pchMessageStartGoldCoin[4] = { 0xfd, 0xc2, 0xb4, 0xdd };
 
 void GetMessageStart(unsigned char pchMessageStart[], bool fPersistent)
 {
-    /*if (fTestNet)
-        memcpy(pchMessageStart, (fPersistent || GetAdjustedTime() > nMessageStartTestSwitchTime)? pchMessageStartTestNew : pchMessageStartTestOld, sizeof(pchMessageStartTestNew));
-    else*/
-    memcpy(pchMessageStart, pchMessageStartGoldCoin, sizeof(pchMessageStartGoldCoin));
+    if (fTestNet)
+        memcpy(pchMessageStart, pchMessageStartTestNew, sizeof(pchMessageStartTestNew));
+    else
+        memcpy(pchMessageStart, pchMessageStartGoldCoin, sizeof(pchMessageStartGoldCoin));
 }
 
 void GetMessageStart2(unsigned char pchMessageStart[])

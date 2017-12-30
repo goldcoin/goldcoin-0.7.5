@@ -86,6 +86,15 @@ int checkpointBlockNum = -1;
 bool defenseDelayActive = false;
 time_t defenseStartTime;
 
+//GoldCoin Fork Heights
+int64 julyFork = 45000;
+int64 novemberFork = 103000;
+int64 novemberFork2 = 118800;
+int64 mayFork = 248000;
+int64 febFork = 372000;
+int64 octoberFork = 100000;
+int64 julyFork2 = 251230;
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -2726,20 +2735,18 @@ FILE* AppendBlockFile(unsigned int& nFileRet)
 
 bool LoadBlockIndex(bool fAllowNew)
 {
-	/*if (fTestNet)
+    if (fTestNet)
 	{
-	    pchMessageStart[0] = 0xfc;
-	    pchMessageStart[1] = 0xc1;
-	    pchMessageStart[2] = 0xb7;
-	    pchMessageStart[3] = 0xdc;
-	    hashGenesisBlock = uint256("0xf5ae71e26c74beacc88382716aced69cddf3dffff24f384e1808905e0188f68f");
-	}(else if(true) {//Need to come up with logic that switches pchMessageStart
-		pchMessageStart[0] = 0xfb;
-	    pchMessageStart[1] = 0xc0;
-	    pchMessageStart[2] = 0xb6;
-	    pchMessageStart[3] = 0xdb;
-		//unsigned char pchMessageStart[4] = { 0xfb, 0xc0, 0xb6, 0xdb }; // LiteCoin: increase each by adding 2 to bitcoin's value.
-	}*/
+        hashGenesisBlock = uint256("63ee26429068a53a39ab251fb3d611bbac9539651f1bae5d7e73adac3767e513");
+
+        julyFork = 2016;
+        novemberFork = 2016;
+        novemberFork2 = 2016;
+        mayFork = 2016;
+        febFork = 2016;
+        octoberFork = 2016;
+        julyFork2 = 2016;
+    }
 
 	//
 	// Load block index
@@ -2774,11 +2781,11 @@ bool LoadBlockIndex(bool fAllowNew)
 		block.nBits    = 0x1e0ffff0;
 		block.nNonce   = 3591624;
 
-		/*if (fTestNet)
+        if (fTestNet)
 		{
-		    block.nTime    = 1368409489;
-		    block.nNonce   = 4465406;
-		}*/
+            block.nTime    = 1513056232;
+            block.nNonce   = 2702105;
+        }
 
 		//// debug print
 		printf("%s\n", block.GetHash().ToString().c_str());
