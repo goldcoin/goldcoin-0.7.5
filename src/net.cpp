@@ -1162,6 +1162,10 @@ static const char *strDNSSeed[][2] = {
     {"vps.gldcoin.com", "vps.gldcoin.com"}
 };
 
+static const char *strTestDNSSeed[][2] = {
+    {"testnet.gldcoin.com", "168.235.108.201"},
+};
+
 void ThreadDNSAddressSeed(void* parg)
 {
     IMPLEMENT_RANDOMIZE_STACK(ThreadDNSAddressSeed(parg));
@@ -1212,6 +1216,31 @@ void ThreadDNSAddressSeed2(void* parg)
                     }
                 }
                 addrman.Add(vAdd, CNetAddr(strDNSSeed[seed_idx][0], true));
+            }
+        }
+    }
+    else
+    {
+        printf("Loading addresses from DNS seeds (could take a while)\n");
+
+        for (unsigned int seed_idx = 0; seed_idx < ARRAYLEN(strTestDNSSeed); seed_idx++) {
+            if (GetNameProxy()) {
+                AddOneShot(strTestDNSSeed[seed_idx][1]);
+            } else {
+                vector<CNetAddr> vaddr;
+                vector<CAddress> vAdd;
+                if (LookupHost(strTestDNSSeed[seed_idx][1], vaddr))
+                {
+                    BOOST_FOREACH(CNetAddr & ip, vaddr)
+                    {
+                        int nOneDay = 24 * 3600;
+                        CAddress addr = CAddress(CService(ip, GetDefaultPort()));
+                        addr.nTime = GetTime() - 3 * nOneDay - GetRand(4 * nOneDay); // use a random age between 3 and 7 days old
+                        vAdd.push_back(addr);
+                        found++;
+                    }
+                }
+                addrman.Add(vAdd, CNetAddr(strTestDNSSeed[seed_idx][0], true));
             }
         }
     }
